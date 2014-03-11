@@ -3,7 +3,8 @@
 		<title>FreewayData</title>
 		<link href="/static/style.css" rel="stylesheet" type="text/css"/>
 		<script src="/mapreduce/jquery.js" type="text/javascript"></script>
-		<script src="/static/custom.js" type="text/javascript"></script>
+		<script src="/static/custom.js" type="text/javascript"></script
+		
 	</head>
 	<body>
 		<div>
@@ -128,6 +129,165 @@
 				{% else %}
 				No stations found - upload freeway_stations.csv and perform import above</a>.
 				{% endif %}
+			</div>
+			<h3>Query #1</h3>
+			<p>Single-Day Station Travel Times</p>
+			<!-- Query 1 -->
+			<div>
+				
+				<form action=" " method="post">
+					Freeway:     <select>
+							<optgroup label="I-205">
+								<option value="I-205N">I-205 N</option>
+								<option value="I-205S">I-205 S</option>
+							<optgroup label="OR 217">
+								<option value="OR217N">OR 217 N</option>
+								<option value="OR217S">OR 217 S</option>
+							<optgroup label="I-5">
+								<option value="I-5N">I-5 N</option>
+								<option value="I-5S">I-5 S</option>
+							<optgroup label="US 26">
+								<option value="US26E">US 26 E</option>
+								<option value="US26W">US 26 W</option>
+							<optgroup label="I-405">
+								<option value="I-405N">I-405 N</option>
+								<option value="I-405S">I-405 S</option>
+							<optgroup label="I-84">
+								<option value="I-84E">I-84 E</option>
+								<option value="I-84W">I-84 W</option>
+						     </select><br>
+					Interval:    <select>
+							<option value="5Min">5 Min</option>
+							<option value="15Min">15 Min</option>
+							<option value="1Hour">1 Hour</option>
+							<option value="Day">1 Day</option>
+						     </select><br>
+					Date:<br>
+					<input type="submit" name="q1run" value="Run"/>
+				</form>
+				
+			</div>
+			<h3>Query #2</h3>
+			<p>Hourly Corridor Travel Times</p>
+			<!-- Query 2 -->
+			<div>
+				<form action=" " method="post">
+					Freeway:     <select>
+							<optgroup label="I-205">
+								<option value="I-205N">I-205 N</option>
+								<option value="I-205S">I-205 S</option>
+							<optgroup label="OR 217">
+								<option value="OR217N">OR 217 N</option>
+								<option value="OR217S">OR 217 S</option>
+							<optgroup label="I-5">
+								<option value="I-5N">I-5 N</option>
+								<option value="I-5S">I-5 S</option>
+							<optgroup label="US 26">
+								<option value="US26E">US 26 E</option>
+								<option value="US26W">US 26 W</option>
+							<optgroup label="I-405">
+								<option value="I-405N">I-405 N</option>
+								<option value="I-405S">I-405 S</option>
+							<optgroup label="I-84">
+								<option value="I-84E">I-84 E</option>
+								<option value="I-84W">I-84 W</option>
+						     </select><br>
+					Start Date: <br>
+					End Date: <br>	
+					<input type="submit" name="q1run" value="Run"/>
+				</form>		
+			</div>
+			<h3>Query #3</h3>
+			<p>Mid-Weekday Peak Period Travel Times</p>
+			<!-- Query 3 -->
+			<div>
+				<form action=" " method="post">
+					Freeway:     <select>
+							<optgroup label="I-205">
+								<option value="I-205N">I-205 N</option>
+								<option value="I-205S">I-205 S</option>
+							<optgroup label="OR 217">
+								<option value="OR217N">OR 217 N</option>
+								<option value="OR217S">OR 217 S</option>
+							<optgroup label="I-5">
+								<option value="I-5N">I-5 N</option>
+								<option value="I-5S">I-5 S</option>
+							<optgroup label="US 26">
+								<option value="US26E">US 26 E</option>
+								<option value="US26W">US 26 W</option>
+							<optgroup label="I-405">
+								<option value="I-405N">I-405 N</option>
+								<option value="I-405S">I-405 S</option>
+							<optgroup label="I-84">
+								<option value="I-84E">I-84 E</option>
+								<option value="I-84W">I-84 W</option>
+						     </select><br>
+					Start Date: <br>
+					End Date: <br>	
+					<input type="submit" name="q1run" value="Run"/>
+				</form>			
+			</div>
+			<h3>Query #4</h3>
+			<p>Station-to-Station Travel Times</p>
+			<!-- Query 4 -->
+			<div>
+				<form action=" " method="post">
+					Freeway:     <select>
+							<optgroup label="I-205">
+								<option value="I-205N">I-205 N</option>
+								<option value="I-205S">I-205 S</option>
+							<optgroup label="OR 217">
+								<option value="OR217N">OR 217 N</option>
+								<option value="OR217S">OR 217 S</option>
+							<optgroup label="I-5">
+								<option value="I-5N">I-5 N</option>
+								<option value="I-5S">I-5 S</option>
+							<optgroup label="US 26">
+								<option value="US26E">US 26 E</option>
+								<option value="US26W">US 26 W</option>
+							<optgroup label="I-405">
+								<option value="I-405N">I-405 N</option>
+								<option value="I-405S">I-405 S</option>
+							<optgroup label="I-84">
+								<option value="I-84E">I-84 E</option>
+								<option value="I-84W">I-84 W</option>
+						     </select><br>
+					Time:	     <select>
+							<option value= "1">1</option>
+							<option value= "2">2</option>
+							<option value= "3">3</option>
+							<option value= "4">4</option>
+							<option value= "5">5</option>
+							<option value= "6">6</option>
+							<option value= "7">7</option>
+							<option value= "8">8</option>
+							<option value= "9">9</option>
+							<option value= "10">10</option>
+							<option value= "11">11</option>
+							<option value= "12">12</option>
+						     </select>
+						     <select>
+							<option value="00">00</option>
+							<option value="05">05</option>
+							<option value="10">10</option>
+							<option value="15">15</option>
+							<option value="20">20</option>
+							<option value="25">25</option>
+							<option value="30">30</option>
+							<option value="35">35</option>
+							<option value="40">40</option>
+							<option value="45">45</option>
+							<option value="50">50</option>
+							<option value="55">55</option>
+						     </select>
+						     <select>
+							<option value="AM">AM</option>
+							<option value="PM">PM</option>
+						     </select><br>
+					Date: <br>
+
+					<input type="submit" name="q1run" value="Run"/>
+				</form>						
 			</div>
 		</div>
 		<hr/>
