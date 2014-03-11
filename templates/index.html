@@ -57,6 +57,79 @@
 				{% endif %}
 			</div>
 			<hr/>
+			<h3>View Datastore entities</h3>
+			<p>Highway, Station, and Detector data stored in Datastore</p>
+			<!-- Highways Datastore entities table -->
+			<div>
+				{% if hwys_count %}
+				<h4>Highways</h4>
+				<table border=1>
+					<tr>
+						<th>highwayid</td>
+						<th>highwayname</th>
+						<th>direction</th>
+						<th>shortdirection</th>
+						<th>stations</th>
+					</tr>
+					{% for highway in highways %}
+					<tr>
+						<td>{{ highway.highwayid }}</td>
+						<td>{{ highway.highwayname }} </td>
+						<td>{{ highway.direction }}</td>
+						<td>{{ highway.shortdirection }}</td>
+						<td>{{ highway.stations }}</td>
+					{% endfor %}
+					</tr>
+				</table>
+				{% else %}
+				No highways found - upload highways.csv and perform import above.
+				{% endif %}
+			</div>
+			<!-- Stations Datastore entities table -->
+			<div>
+				{% if stns_count %}
+				<h4>Stations</h4>
+				<table border=1>
+					<tr>
+						<th>stationid</td>
+						<th>highwayid</th>
+						<th>milepost</th>
+						<th>locationtext</th>
+						<th>upstream</th>
+						<th>downstream</th>
+						<th>stationclass</th>
+						<th>numberlanes</th>
+						<th>latlon</th>
+						<th>length_mid</th>
+						<th>detectors</th>
+					</tr>
+					{% for station in stations %}
+					<tr>
+						<td>{{ station.stationid }}</td>
+						<td>{{ station.highwayid }} </td>
+						<td>{{ station.milepost }}</td>
+						<td>{{ station.locationtext }}</td>
+						<td>{{ station.upstream }}</td>
+						<td>{{ station.downstream }}</td>
+						<td>{{ station.stationclass }}</td>
+						<td>{{ station.numberlanes }}</td>
+						<td>{{ station.latlon }}</td>
+						<td>{{ station.length_mid }}</td>
+						{% if station.detectors %}
+						<td>
+						{% for detector in station.detectors %}
+						{{ detector.detectorid }}
+						{% endfor %}
+						</td>
+						{% endif %}
+					{% endfor %}
+					</tr>
+				</table>
+				{% else %}
+				No stations found - upload freeway_stations.csv and perform import above</a>.
+				{% endif %}
+			</div>
 		</div>
+		<hr/>
 	</body>
 </html>

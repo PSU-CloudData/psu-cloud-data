@@ -26,7 +26,79 @@ from google.appengine.ext import ndb
 
 from BaseHandler import BaseHandler
 from FileMetadata import FileMetadata
-from FreewayData import Highway, Station, Detector, LoopData, SpeedSum, DetectorEntry
+from FreewayData import Highway, Station, Detector, SpeedSum, DetectorEntry
+
+
+def combine_stations():
+	""" store Station entity keys in Highway records in datastore
+
+	Append each Station entity's key to the corresponding Highway's list of stations.
+	"""
+	stn_q = Station.query()
+	for stn in stn_q.fetch():
+		hwy_q = Highway.query(Highway.highwayid == stn.highwayid)
+		for hwy in hwy_q.fetch():
+			if stn.key not in hwy.stations:
+				logging.info("Appending station %s to highway %s", stn.stationid, hwy.highwayid)
+				hwy.stations.append(stn.key)
+				hwy.put()
+
+
+def combine_detectors():
+	""" combine Station and Detector data records in datastore
+
+	Append each Detector record to the corresponding Station's list of detectors properties.
+	Remove Detector entities after they have been imported.
+	"""
+	det_q = Detector.query()
+	for det in det_q.fetch():
+		stn_q = Station.query(Station.stationid == det.stationid)
+		for stn in stn_q.fetch():
+			if det not in stn.detectors:
+				stn.detectors.append(det)
+				stn.put()
+				logging.info("Put detector:%s in station:%s", det.key, stn.stationid)
+	deleteDetectors()
+
+def deleteDetectors():
+	""" delete all Detector entities from datastore """
+	detector_keys = Detector.query().fetch(keys_only = True)
+	detector_entities = ndb.get_multi(detector_keys)
+	ndb.delete_multi([d.key for d in detector_entities])
+
+
+def getHighways():
+	""" get a list of highway entities
+
+	Query the datastore for the list of highways
+	
+	Returns:
+	  list of Highway entities
+	"""
+
+	hwy_q = Highway.query()
+	results = hwy_q.fetch(12)
+	hwys = [hwy for hwy in results]
+	return hwys
+
+
+def getStationsForHighway(hw, dir):
+	""" get a list of station entities
+
+	Query the datastore for a list of station entities located on a specific highway
+
+	Args:
+	  hw: highwayname that contains the desired stations
+	  dir: direction of highway for stations that are requested
+	Returns:
+	  list of Station entities
+	"""
+	stations = []
+	hwy_q = Highway.query(Highway.highwayname == hw, Highway.shortdirection == dir)
+	for hwy in hwy_q.fetch():
+		stations = [station.get() for station in hwy.stations]
+	return stations
+
 
 class MainHandler(BaseHandler):
 	""" MainHandler class definition
@@ -38,18 +110,31 @@ class MainHandler(BaseHandler):
 	
 		Display a user interface for uploading files to Blobstore
 		"""
-		q = FileMetadata.query()
-		results = q.fetch(10)
+		hwy = self.request.get('hwy', default_value = 'I-205')
+		dir = self.request.get('dir', default_value = 'N')
 		
+		# get a list of files residing in Blobstore
+		file_q = FileMetadata.query()
+		results = file_q.fetch(10)
 		files = [result for result in results]
-		
 		file_count = len(files)
+
+		# get highways from Datastore
+		hwys = getHighways()
+		hwy_count = len(hwys)
+		
+		stns = getStationsForHighway(hwy, dir)
+		stn_count = len(stns)
 		
 		upload_url = blobstore.create_upload_url('/upload')
 				
 		self.render_template("index.html",{
 							 "file_count": file_count,
 							 "files": files,
+							 "highways": hwys,
+							 "hwys_count": hwy_count,
+							 "stations": stns,
+							 "stns_count": stn_count,
 							 "upload_url":upload_url})
 
 
@@ -105,7 +190,6 @@ class ImportHandler(BaseHandler):
 							direction=line['direction'],
 							highwayname=line['highwayname'])
 				h.put()
-				self.response.out.write(h)
 		elif filename == 'freeway_stations.csv':
 			for line in csv_reader:
 				s = Station(id=line['stationid'],
@@ -122,7 +206,7 @@ class ImportHandler(BaseHandler):
 				if '.' in line['length_mid']:
 					setattr(s, 'length_mid', float(line['length_mid']))
 				s.put()
-				self.response.out.write(s)
+			combine_stations()
 		elif filename == 'freeway_detectors.csv':
 			for line in csv_reader:
 				d = Detector(id=line['detectorid'],
@@ -135,9 +219,11 @@ class ImportHandler(BaseHandler):
 							 stationid=int(line['stationid']))
 				d.put()
 				self.response.out.write(d)
+			combine_detectors()
 		else:
 			logging.info("Import not supported for file: "+blob_info.filename)
 		self.redirect("/")
+
 
 app = webapp2.WSGIApplication([
     ('/', MainHandler),

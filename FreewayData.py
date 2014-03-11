@@ -17,18 +17,6 @@
 #
 from google.appengine.ext import ndb
 
-class LoopData (ndb.Model):
-	""" LoopData ndb class definition """
-	detectorid = ndb.IntegerProperty(indexed = True)
-	starttime = ndb.DateTimeProperty(indexed = True)
-	volume = ndb.IntegerProperty(default = 0)
-	speed = ndb.IntegerProperty(default = 0)
-	occupancy = ndb.IntegerProperty(default = 0)
-	status = ndb.IntegerProperty()
-	dqflags = ndb.IntegerProperty()
-	minute	= ndb.ComputedProperty(lambda self: self.starttime.minute)
-	hour = ndb.ComputedProperty(lambda self: self.starttime.hour)
-
 class Detector (ndb.Model):
 	""" Detector ndb class definition """
 	detectorid = ndb.IntegerProperty(indexed = True)
