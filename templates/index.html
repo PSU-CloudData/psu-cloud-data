@@ -3,8 +3,10 @@
 		<title>FreewayData</title>
 		<link href="/static/style.css" rel="stylesheet" type="text/css"/>
 		<script src="/mapreduce/jquery.js" type="text/javascript"></script>
-		<script src="/static/custom.js" type="text/javascript"></script
-		
+		<script src="/static/custom.js" type="text/javascript"></script>
+		<link rel="stylesheet" href="//code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.css"/>
+		<script src="//code.jquery.com/jquery-1.9.1.js"></script>
+		<script src="//code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
 	</head>
 	<body>
 		<div>
@@ -14,7 +16,7 @@
 				<h3>Upload files to the Blobstore</h3>
 				<label for="file">Filename:</label>
 				<input type="file" name="file" id="file"/>
-				<br>
+				<br/>
 				<input type="submit" name="submit" value="Upload"/>
 			</form>
 			<hr>
@@ -45,7 +47,7 @@
 					</tr>
 					{% endfor %}
 				</table>
-				<br>
+				<br/>
 				<form action="/import" method="post">
 					Input File: <label id="fileName">none selected</label>
 					<input type="hidden" name="filekey" id="filekey" value=""/>
@@ -130,6 +132,16 @@
 				No stations found - upload freeway_stations.csv and perform import above</a>.
 				{% endif %}
 			</div>
+			<script>
+				$(function() {
+				  $( "#q1date" ).datepicker();
+				  $( "#q2sdate" ).datepicker();
+				  $( "#q2edate" ).datepicker();
+				  $( "#q3sdate" ).datepicker();
+				  $( "#q3edate" ).datepicker();
+				  $( "#q4date" ).datepicker();
+				  });
+				</script>
 			<h3>Query #1</h3>
 			<p>Single-Day Station Travel Times</p>
 			<!-- Query 1 -->
@@ -155,14 +167,14 @@
 							<optgroup label="I-84">
 								<option value="I-84E">I-84 E</option>
 								<option value="I-84W">I-84 W</option>
-						     </select><br>
+						     </select><br/>
 					Interval:    <select>
 							<option value="5Min">5 Min</option>
 							<option value="15Min">15 Min</option>
 							<option value="1Hour">1 Hour</option>
 							<option value="Day">1 Day</option>
-						     </select><br>
-					Date:<br>
+						     </select><br/>
+					<label>Date:<input type="text" id="q1date"/></label><br/>
 					<input type="submit" name="q1run" value="Run"/>
 				</form>
 				
@@ -191,10 +203,10 @@
 							<optgroup label="I-84">
 								<option value="I-84E">I-84 E</option>
 								<option value="I-84W">I-84 W</option>
-						     </select><br>
-					Start Date: <br>
-					End Date: <br>	
-					<input type="submit" name="q1run" value="Run"/>
+						     </select><br/>
+					<label>Start Date: <input type="text" id="q2sdate"/></label><br/>
+					<label>End Date: <input type="text" id="q2edate"></label><br/>
+					<input type="submit" name="q2run" value="Run"/>
 				</form>		
 			</div>
 			<h3>Query #3</h3>
@@ -221,10 +233,10 @@
 							<optgroup label="I-84">
 								<option value="I-84E">I-84 E</option>
 								<option value="I-84W">I-84 W</option>
-						     </select><br>
-					Start Date: <br>
-					End Date: <br>	
-					<input type="submit" name="q1run" value="Run"/>
+						     </select><br/>
+					<label>Start Date: <input type="text" id="q3sdate"/></label><br/>
+					<label>End Date: <input type="text" id="q3edate"></label><br/>
+					<input type="submit" name="q3run" value="Run"/>
 				</form>			
 			</div>
 			<h3>Query #4</h3>
@@ -251,7 +263,7 @@
 							<optgroup label="I-84">
 								<option value="I-84E">I-84 E</option>
 								<option value="I-84W">I-84 W</option>
-						     </select><br>
+						     </select><br/>
 					Time:	     <select>
 							<option value= "1">1</option>
 							<option value= "2">2</option>
@@ -283,10 +295,9 @@
 						     <select>
 							<option value="AM">AM</option>
 							<option value="PM">PM</option>
-						     </select><br>
-					Date: <br>
-
-					<input type="submit" name="q1run" value="Run"/>
+						     </select><br/>
+					<label>Date:<input type="text" id="q4date"/></label><br/>
+					<input type="submit" name="q4run" value="Run"/>
 				</form>						
 			</div>
 		</div>
