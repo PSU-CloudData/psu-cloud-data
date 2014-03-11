@@ -119,6 +119,8 @@ class ImportHandler(BaseHandler):
 							numberlanes=int(line['numberlanes']),
 							latlon=ndb.GeoPt(line['latlon']),
 							highway=ndb.Key(Highway, line['highwayid']))
+				if '.' in line['length_mid']:
+					setattr(s, 'length_mid', float(line['length_mid']))
 				s.put()
 				self.response.out.write(s)
 		elif filename == 'freeway_detectors.csv':

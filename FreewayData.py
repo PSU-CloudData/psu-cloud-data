@@ -50,6 +50,7 @@ class Station (ndb.Model):
 	stationclass = ndb.IntegerProperty()
 	numberlanes = ndb.IntegerProperty()
 	latlon = ndb.GeoPtProperty()
+	length_mid = ndb.FloatProperty()
 	detectors = ndb.StructuredProperty(Detector, repeated=True)
 	highway = ndb.KeyProperty()
 
