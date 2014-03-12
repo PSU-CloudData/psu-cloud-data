@@ -132,6 +132,26 @@
 				No stations found - upload freeway_stations.csv and perform import above</a>.
 				{% endif %}
 			</div>
+			<!-- MapReduce interface -->
+			<hr/>
+			<div>
+				<h3>Run MapReduce jobs on imported data</h3>
+				<p>Select an input file above, and run a MapReduce job on it</p>
+				<form action="/map_reduce" method="post">
+					Input File: <label id="mr_fileName">none selected</label>
+					<input type="hidden" name="filekey" id="mr_filekey" value=""/>
+					<input type="hidden" name="blobkey" id="mr_blobkey" value=""/>
+					<br />
+					<br />
+					<table>
+						<tr>
+							<td><input type="submit" id="daily_speed_sum" name="daily_speed_sum" value="DailySpeedSum" disabled="true"></td>
+						</tr>
+					</table>
+				</form>
+			</div>
+			<!-- Query interface -->
+			<hr/>
 			<script>
 				$(function() {
 				  $( "#q1date" ).datepicker({ minDate: "09/15/2011"});

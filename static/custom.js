@@ -31,4 +31,10 @@ function updateImportForm(filekey, blobkey, filename) {
   $('#blobkey').val(blobkey);
 
   $('#import').removeAttr('disabled');
+  
+  $('#mr_fileName').text(filename);
+  $('#mr_filekey').val(filekey);
+  $('#mr_blobkey').val(blobkey);
+
+  $('#daily_speed_sum').removeAttr('disabled');
 }

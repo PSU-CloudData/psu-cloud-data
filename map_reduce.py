@@ -8,14 +8,116 @@ from google.appengine.ext import blobstore
 from google.appengine.ext import ndb
 
 from google.appengine.api import files
+from google.appengine.api import taskqueue
 
 from mapreduce import operation as op
 from mapreduce import context
 from mapreduce import model
+from mapreduce import base_handler
+from mapreduce import mapreduce_pipeline
+from mapreduce import shuffler
+from mapreduce import util
 
 from FileMetadata import FileMetadata
 
+#MARK: MapReduce pipelines
+
+def split_into_columns(s):
+	""" split a string into columns
+	      
+	Split s into a list of values using the ',' character as a delimiter
+	"""
+	s = re.sub(',,,', ',0,0,', s)
+	s = re.sub(',,', ',0,', s)
+	return s.split(',')
+
+
+def daily_speed_sum_map(data):
+	"""Daily Speed Sum map function"""
+	(byte_offset, line_value) = data
+	columns = split_into_columns(line_value)
+	if columns[3] != 'speed':
+		yield ("%s_%s" % (columns[0], columns[1][:10]), columns[3])
+
+
+def daily_speed_sum_reduce(key, values):
+	"""Daily Speed Sum reduce function."""
+	yield "%s: %s, %s\n" % (key, sum([int(value) for value in values]), len(values))
+
+
+class DailySpeedSumPipeline(base_handler.PipelineBase):
+  """A pipeline to run daily_speed_sum.
+
+  Args:
+    blobkey: blobkey to process as string. Should be a zip archive with
+      text files inside.
+  """
+
+
+  def run(self, filekey, blobkey):
+    """ run the DailySpeedSum MapReduce job
+	      
+    Setup the MapReduce pipeline and yield StoreOutput function
+	"""
+    output = yield mapreduce_pipeline.MapreducePipeline(
+        "daily_speed_sum",
+        "map_reduce.daily_speed_sum_map",
+        "map_reduce.daily_speed_sum_reduce",
+        "mapreduce.input_readers.BlobstoreZipLineInputReader",
+        "mapreduce.output_writers.BlobstoreOutputWriter",
+		mapper_params={
+			"blob_keys": blobkey,
+        },
+        reducer_params={
+            "mime_type": "text/plain",
+        },
+        shards=16)
+    yield StoreOutput("DailySpeedSum", filekey, output)
+
+
+class StoreOutput(base_handler.PipelineBase):
+  """A pipeline to store the result of the MapReduce job in the database.
+
+  Args:
+    mr_type: the type of mapreduce job run (e.g., DailySpeedSum)
+    encoded_key: the DB key corresponding to the metadata of this job
+    output: the blobstore location where the output of the job is stored
+  """
+
+  def run(self, mr_type, encoded_key, output):
+    logging.info("output is %s" % str(output))
+    logging.info("key is %s" % encoded_key)
+    key = ndb.Key(FileMetadata, encoded_key)
+    m = key.get()
+
+    if mr_type == "DailySpeedSum":
+	  blob_key = blobstore.BlobKey(output[0])
+	  if blob_key:
+	    m.daily_speed_sum = blob_key
+
+    m.put()
+
+
 #MARK: RequestHandlers
+
+
+class IndexHandler(webapp2.RequestHandler):
+  def post(self):
+    """ respond to HTTP POST requests
+      
+    Perform requested MapReduce operation on Datastore or Blobstore.
+	"""
+    filekey = self.request.get("filekey")
+    blob_key = self.request.get("blobkey")
+
+    if self.request.get("daily_speed_sum"):
+      logging.info("Starting daily speed sum...")
+      pipeline = DailySpeedSumPipeline(filekey, blob_key)
+      pipeline.start()
+      self.redirect(pipeline.base_path + "/status?root=" + pipeline.pipeline_id)
+    else:
+	  logging.info("Unrecognized operation.")
+
 
 class DoneHandler(webapp2.RequestHandler):
   """Handler for completion of *_speed_sum operation."""
@@ -176,6 +278,7 @@ def hourly_speed_sum(entity):
 
 app = webapp2.WSGIApplication(
     [
-        ('/done', DoneHandler)
+        ('/done', DoneHandler),
+        ('/map_reduce', IndexHandler)
     ],
     debug=True)
