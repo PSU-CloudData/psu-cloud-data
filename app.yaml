@@ -22,6 +22,12 @@ handlers:
 - url: /mapreduce(/.*)?
   script: mapreduce.main.APP
 
+- url: /map_reduce
+  script: map_reduce.app
+
+- url: /done
+  script: map_reduce.app
+
 - url: .*
   script: main.app
 

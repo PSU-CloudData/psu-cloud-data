@@ -1,1 +1,29 @@
 mapreduce:
+
+- name: Perform daily speed sum
+  params:
+  - name: done_callback
+    value: /done
+  mapper:
+    handler: map_reduce.daily_speed_sum
+    input_reader: mapreduce.input_readers.BlobstoreZipInputReader
+    params:
+    - name: blob_key
+    - name: processing_rate
+      default: 100
+    - name: shard_count
+      default: 16
+
+- name: Perform hourly speed sum
+  params:
+  - name: done_callback
+    value: /done
+  mapper:
+    handler: map_reduce.hourly_speed_sum
+    input_reader: mapreduce.input_readers.BlobstoreZipInputReader
+    params:
+    - name: blob_key
+    - name: processing_rate
+      default: 100
+    - name: shard_count
+      default: 16

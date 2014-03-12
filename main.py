@@ -23,6 +23,7 @@ from google.appengine.ext import blobstore
 from google.appengine.ext.webapp import blobstore_handlers
 from google.appengine.ext.blobstore import BlobInfo
 from google.appengine.ext import ndb
+from google.appengine.runtime import apiproxy_errors
 
 from BaseHandler import BaseHandler
 from FileMetadata import FileMetadata
@@ -112,31 +113,37 @@ class MainHandler(BaseHandler):
 		"""
 		hwy = self.request.get('hwy', default_value = 'I-205')
 		dir = self.request.get('dir', default_value = 'N')
-		
-		# get a list of files residing in Blobstore
-		file_q = FileMetadata.query()
-		results = file_q.fetch(10)
-		files = [result for result in results]
-		file_count = len(files)
 
-		# get highways from Datastore
-		hwys = getHighways()
-		hwy_count = len(hwys)
-		
-		stns = getStationsForHighway(hwy, dir)
-		stn_count = len(stns)
-		
-		upload_url = blobstore.create_upload_url('/upload')
-				
-		self.render_template("index.html",{
-							 "file_count": file_count,
-							 "files": files,
-							 "highways": hwys,
-							 "hwys_count": hwy_count,
-							 "stations": stns,
-							 "stns_count": stn_count,
-							 "upload_url":upload_url})
+		try:
+			# get a list of files residing in Blobstore
+			file_q = FileMetadata.query()
+			results = file_q.fetch(10)
+			files = [result for result in results]
+			file_count = len(files)
 
+			# get highways from Datastore
+			hwys = getHighways()
+			hwy_count = len(hwys)
+			
+			stns = getStationsForHighway(hwy, dir)
+			stn_count = len(stns)
+			
+			hwy_list = set([hwy.highwayname for hwy in hwys])
+			stn_list = set([stn.locationtext for stn in stns])
+			
+			upload_url = blobstore.create_upload_url('/upload')
+					
+			self.render_template("index.html",{
+								 "file_count": file_count,
+								 "files": files,
+								 "highways": hwys,
+								 "hwys_count": hwy_count,
+								 "stations": stns,
+								 "stns_count": stn_count,
+								 "upload_url":upload_url})
+		except apiproxy_errors.OverQuotaError, message:
+			logging.error(message)
+			self.response.out.write("<h3>Error</h3><br/><p>%s</p>", message)
 
 class UploadHandler(blobstore_handlers.BlobstoreUploadHandler):
 	""" UploadHandler class definition
