@@ -224,9 +224,93 @@ class ImportHandler(BaseHandler):
 			logging.info("Import not supported for file: "+blob_info.filename)
 		self.redirect("/")
 
+class Q1Handler(BaseHandler):
+	""" Q1Handler class definition
+	
+	Handle running query 1 on over the datastore given user input
+	"""
+	def post(self):
+		freeway = self.request.get('q1freeway')
+		interval = self.request.get('q1interval')
+		date = self.request.get('q1date')
+		self.response.out.write('''
+        	<html>
+          		<body>
+				Your input was freeway %s, interval %s, and date %s
+            			<form action ="/">
+              		 	  <input type="submit" name="Home" value="Home"/>
+            			</form>
+          		</body>
+       	 	</html>
+        	'''% (freeway, interval, date))
+
+
+class Q2Handler(BaseHandler):
+	""" Q2Handler class definition
+	
+	Handle running query 2 on over the datastore given user input
+	"""
+	def post(self):
+		freeway = self.request.get('q2freeway')
+		start = self.request.get('q2sdate')
+		end = self.request.get('q2edate')
+		self.response.out.write('''
+        	<html>
+          		<body>
+            			<form action ="/">
+              		 	  <input type="submit" name="Home" value="Home"/>
+            			</form>
+          		</body>
+       	 	</html>
+        	''')
+
+class Q3Handler(BaseHandler):
+	""" Q3Handler class definition
+	
+	Handle running query 3 on over the datastore given user input
+	"""
+	def post(self):
+		freeway = self.request.get('q3freeway')
+		start = self.request.get('q3sdate')
+		end = self.request.get('q3edate')
+		self.response.out.write('''
+        	<html>
+          		<body>
+            			<form action ="/">
+              		 	  <input type="submit" name="Home" value="Home"/>
+            			</form>
+          		</body>
+       	 	</html>
+        	''')
+
+class Q4Handler(BaseHandler):
+	""" Q4Handler class definition
+	
+	Handle running query 4 on over the datastore given user input
+	"""
+	def post(self):
+		freeway = self.request.get('q4freeway')
+		hour = self.request.get('q4hour')
+		min = self.request.get('q4min')
+		ampm = self.request.get('q4ampm')
+		date = self.request.get('q4date')
+		self.response.out.write('''
+        	<html>
+          		<body>
+				
+            			<form action ="/">
+              		 	  <input type="submit" name="Home" value="Home"/>
+            			</form>
+          		</body>
+       	 	</html>
+        	''')
 
 app = webapp2.WSGIApplication([
     ('/', MainHandler),
 	('/upload', UploadHandler),
-	('/import', ImportHandler)
+	('/import', ImportHandler),
+	('/Queryone', Q1Handler),
+	('/Querytwo', Q2Handler),
+	('/Querythree', Q3Handler),
+	('/Queryfour', Q4Handler)
 ], debug=True)

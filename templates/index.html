@@ -134,21 +134,36 @@
 			</div>
 			<script>
 				$(function() {
-				  $( "#q1date" ).datepicker();
-				  $( "#q2sdate" ).datepicker();
-				  $( "#q2edate" ).datepicker();
-				  $( "#q3sdate" ).datepicker();
-				  $( "#q3edate" ).datepicker();
-				  $( "#q4date" ).datepicker();
+				  $( "#q1date" ).datepicker({ minDate: "09/15/2011"});
+				  $( "#q2sdate" ).datepicker({ minDate: "09/15/2011"});
+				  $( "#q2edate" ).datepicker({ minDate: "09/15/2011"});
+				  $( "#q3sdate" ).datepicker({ minDate: "09/15/2011", beforeShowDay: midweek});
+				  $( "#q3edate" ).datepicker({ minDate: "09/15/2011", beforeShowDay: midweek});
+				  $( "#q4date" ).datepicker({ minDate: "09/15/2011"});
+
+				  $( "#q1date" ).datepicker('setDate', "09/15/2011");
+				  $( "#q2sdate" ).datepicker('setDate', "09/15/2011");
+				  $( "#q2edate" ).datepicker('setDate', "09/15/2011");
+				  $( "#q3sdate" ).datepicker('setDate', "09/15/2011");
+				  $( "#q3edate" ).datepicker('setDate', "09/15/2011");
+				  $( "#q4date" ).datepicker('setDate', "09/15/2011");
 				  });
-				</script>
+
+                             	var mid = ["2","3","4"];
+				function midweek(date){
+				  var sdate = date.getDay().toString();
+				  if($.inArray(sdate, mid) == -1) return [false, ""];
+				  else return[true, ""];
+          			}
+			</script>
+			
 			<h3>Query #1</h3>
 			<p>Single-Day Station Travel Times</p>
 			<!-- Query 1 -->
 			<div>
 				
-				<form action=" " method="post">
-					Freeway:     <select>
+				<form action="/Queryone" method="post">
+					Freeway:     <select name="q1freeway">
 							<optgroup label="I-205">
 								<option value="I-205N">I-205 N</option>
 								<option value="I-205S">I-205 S</option>
@@ -168,13 +183,13 @@
 								<option value="I-84E">I-84 E</option>
 								<option value="I-84W">I-84 W</option>
 						     </select><br/>
-					Interval:    <select>
+					Interval:    <select name="q1interval">
 							<option value="5Min">5 Min</option>
 							<option value="15Min">15 Min</option>
 							<option value="1Hour">1 Hour</option>
 							<option value="Day">1 Day</option>
 						     </select><br/>
-					<label>Date:<input type="text" id="q1date"/></label><br/>
+					<label>Date:<input type="text" name="q1date" id="q1date"/></label><br/>
 					<input type="submit" name="q1run" value="Run"/>
 				</form>
 				
@@ -183,8 +198,8 @@
 			<p>Hourly Corridor Travel Times</p>
 			<!-- Query 2 -->
 			<div>
-				<form action=" " method="post">
-					Freeway:     <select>
+				<form action="/querytwo" method="post">
+					Freeway:     <select name="q2freeway">
 							<optgroup label="I-205">
 								<option value="I-205N">I-205 N</option>
 								<option value="I-205S">I-205 S</option>
@@ -204,8 +219,8 @@
 								<option value="I-84E">I-84 E</option>
 								<option value="I-84W">I-84 W</option>
 						     </select><br/>
-					<label>Start Date: <input type="text" id="q2sdate"/></label><br/>
-					<label>End Date: <input type="text" id="q2edate"></label><br/>
+					<label>Start Date: <input type="text" name="q1sdate" id="q2sdate"/></label><br/>
+					<label>End Date: <input type="text" name="q1edate" id="q2edate"></label><br/>
 					<input type="submit" name="q2run" value="Run"/>
 				</form>		
 			</div>
@@ -213,8 +228,8 @@
 			<p>Mid-Weekday Peak Period Travel Times</p>
 			<!-- Query 3 -->
 			<div>
-				<form action=" " method="post">
-					Freeway:     <select>
+				<form action="/Querythree " method="post">
+					Freeway:     <select name="q3freeway">
 							<optgroup label="I-205">
 								<option value="I-205N">I-205 N</option>
 								<option value="I-205S">I-205 S</option>
@@ -234,8 +249,8 @@
 								<option value="I-84E">I-84 E</option>
 								<option value="I-84W">I-84 W</option>
 						     </select><br/>
-					<label>Start Date: <input type="text" id="q3sdate"/></label><br/>
-					<label>End Date: <input type="text" id="q3edate"></label><br/>
+					<label>Start Date: <input type="text" name="q1sdate" id="q3sdate"/></label><br/>
+					<label>End Date: <input type="text" name="q1edate" id="q3edate"></label><br/>
 					<input type="submit" name="q3run" value="Run"/>
 				</form>			
 			</div>
@@ -243,8 +258,8 @@
 			<p>Station-to-Station Travel Times</p>
 			<!-- Query 4 -->
 			<div>
-				<form action=" " method="post">
-					Freeway:     <select>
+				<form action="/Queryfour" method="post">
+					Freeway:     <select name="q4freeway">
 							<optgroup label="I-205">
 								<option value="I-205N">I-205 N</option>
 								<option value="I-205S">I-205 S</option>
@@ -264,7 +279,7 @@
 								<option value="I-84E">I-84 E</option>
 								<option value="I-84W">I-84 W</option>
 						     </select><br/>
-					Time:	     <select>
+					Time:	     <select name="q4hour">
 							<option value= "1">1</option>
 							<option value= "2">2</option>
 							<option value= "3">3</option>
@@ -278,7 +293,7 @@
 							<option value= "11">11</option>
 							<option value= "12">12</option>
 						     </select>
-						     <select>
+						     <select name="q4min">
 							<option value="00">00</option>
 							<option value="05">05</option>
 							<option value="10">10</option>
@@ -292,11 +307,11 @@
 							<option value="50">50</option>
 							<option value="55">55</option>
 						     </select>
-						     <select>
+						     <select name="q4ampm">
 							<option value="AM">AM</option>
 							<option value="PM">PM</option>
 						     </select><br/>
-					<label>Date:<input type="text" id="q4date"/></label><br/>
+					<label>Date:<input type="text" name="q4date" id="q4date"/></label><br/>
 					<input type="submit" name="q4run" value="Run"/>
 				</form>						
 			</div>
