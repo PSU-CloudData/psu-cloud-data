@@ -3,6 +3,8 @@ import logging
 import re
 import zipfile
 import csv
+import datetime
+import time
 
 from google.appengine.ext import blobstore
 from google.appengine.ext import ndb
@@ -19,6 +21,7 @@ from mapreduce import shuffler
 from mapreduce import util
 
 from FileMetadata import FileMetadata
+from FreewayData import Detector, DetectorEntry, SpeedSum
 
 #MARK: MapReduce pipelines
 
@@ -73,6 +76,20 @@ class DailySpeedSumPipeline(base_handler.PipelineBase):
         },
         shards=16)
     yield StoreOutput("DailySpeedSum", filekey, output)
+
+
+def daily_speed_sum_map(data):
+	"""Daily Speed Sum map function"""
+	(byte_offset, line_value) = data
+	columns = split_into_columns(line_value)
+	if columns[3] != 'speed':
+		yield ("%s_%s" % (columns[0], columns[1][:10]), columns[3])
+
+
+def daily_speed_sum_reduce(key, values):
+	"""Daily Speed Sum reduce function."""
+	yield "%s: %s, %s\n" % (key, sum([int(value) for value in values]), len(values))
+
 
 
 class StoreOutput(base_handler.PipelineBase):
@@ -272,6 +289,107 @@ def hourly_speed_sum(entity):
 							yield op.counters.Increment('%s_%s_speed_sum' % (line['detectorid'], re.sub(' ', 'T', date.group()[:13])), int(line['speed']))
 				else:
 					logging.error("No field named 'speed' found in CSV headers:%s", csv_headers)
+	else:
+		logging.error("No blob was found for key %s", blob_key)
+
+
+def split_aggregate_output(s):
+	""" split aggregated MapReduce output into a dict
+	      
+	Split s into key and value, using the ':' character as a delimiter
+	"""
+	key_value = s.split(":")
+	key = key_value[0]
+	value = key_value[1]
+	keys = key.split("_")
+	det = keys[0]
+	datestamp = keys[1]
+	timestamp = None
+	speed_sum_count = value.split(",")
+	speed_sum = speed_sum_count[0]
+	speed_count = re.sub('\n', '', speed_sum_count[1])
+	if re.search("T", datestamp):
+		# the datetimestamp includes a time interval - extract it
+		date_time = datestamp.split("T")
+		datestamp = date_time[0]
+		timestamp = date_time[1]
+
+	entry = {'detector': det, 'datestamp':datestamp, 'timestamp':timestamp, 'sum': speed_sum, 'count': speed_count}
+	return entry
+
+
+def import_aggregate_data(entity):
+	""" Method defined for "Import aggregate data" MR job specified in mapreduce.yaml
+		
+		Args:
+		entity: entity to process as string. Should be a text file.
+	"""
+	ctx = context.get()
+	params = ctx.mapreduce_spec.mapper.params
+	blob_key = params['blob_keys']
+	
+	logging.info("Got key:%s", blob_key)
+	blob_reader = blobstore.BlobReader(blob_key, buffer_size=1048576)
+	if blob_reader:
+		logging.info("Got filename:%s", blob_reader.blob_info.filename)
+		interval = None
+		if re.search('daily', blob_reader.blob_info.filename):
+			interval = 'daily_speed'
+		elif re.search('hourly', blob_reader.blob_info.filename):
+			interval = 'hourly_speed'
+		elif re.search('fifteen', blob_reader.blob_info.filename):
+			interval = 'fifteenmin_speed'
+		elif re.search('five', blob_reader.blob_info.filename):
+			interval = 'fivemin_speed'
+			
+		for line in blob_reader:
+			#logging.info("Got line:%s", line)
+			detectorentry_dict = split_aggregate_output(line)
+			# the entry has a time stamp - likely hourly, 15 min, or 5 min count
+			timestamp = None
+			if detectorentry_dict['timestamp']:
+				# there is a timestamp - set it for the SpeedSum object
+				timestamp = time.strptime(detectorentry_dict['timestamp'], "%H:%M")
+			else:
+				# there is no timestamp - likely a daily sum
+				timestamp = datetime.time(0,0)
+
+			entry = DetectorEntry.query(DetectorEntry.date == datetime.datetime.strptime(detectorentry_dict['datestamp'], "%Y-%m-%d").date(),
+										DetectorEntry.detector == ndb.Key(Detector, detectorentry_dict['detector'])).get()
+			speed_sum = None
+			if entry:
+				# an entry for this detectory entry exists - fill in SpeedSum values
+				speed_sum = SpeedSum(time=timestamp,
+										sum = int(detectorentry_dict['sum']),
+										count = int(detectorentry_dict['count']))
+				
+				if interval in entry._properties and interval == 'daily_speed':
+					entry._properties[interval] = speed_sum
+				elif interval in entry._properties:
+					entry._properties[interval].append(speed_sum)
+				else:
+					entry._properties[interval] = [speed_sum]
+						
+			else:
+				# a DetectorEntry does not exist for this detector/date combo - create one...
+				entry = DetectorEntry(date = datetime.datetime.strptime(detectorentry_dict['datestamp'], "%Y-%m-%d").date(),
+										detector = ndb.Key(Detector, detectorentry_dict['detector']))
+										
+				speed_sum = SpeedSum(time = timestamp,
+										sum = int(detectorentry_dict['sum']),
+										count = int(detectorentry_dict['count']))
+				
+				if interval in entry._properties and interval == 'daily_speed':
+					entry._properties[interval] = speed_sum
+				elif interval in entry._properties:
+					entry._properties[interval].append(speed_sum)
+				else:
+					entry._properties[interval] = [speed_sum]
+
+			if entry:
+				yield op.db.Put(entry)
+			else:
+				logging.error("Entry is equal to None")
 	else:
 		logging.error("No blob was found for key %s", blob_key)
 

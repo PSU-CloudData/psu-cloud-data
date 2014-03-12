@@ -27,3 +27,17 @@ mapreduce:
       default: 100
     - name: shard_count
       default: 16
+
+- name: Import aggregate data
+  params:
+  - name: done_callback
+    value: /done
+  mapper:
+    handler: map_reduce.import_aggregate_data
+    input_reader: mapreduce.input_readers.BlobstoreLineInputReader
+    params:
+    - name: blob_keys
+    - name: processing_rate
+      default: 100
+    - name: shard_count
+      default: 16
