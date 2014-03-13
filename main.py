@@ -238,21 +238,35 @@ class Q1Handler(BaseHandler):
 	"""
 	def post(self):
 		freeway = self.request.get('q1freeway')
-		fwaysplit = freeway.split()
+		fwayname = freeway[:-1]
+		fwaydir = freeway[-1:]
 		interval = self.request.get('q1interval')
 		date = self.request.get('q1date')
-		highwaystations = Highway.query(Highway.	
+		
+		highway = Highway.query(Highway.highwayname == fwayname, Highway.shortdirection == fwaydir).get()
+		
+		stations = Station.query(Station.highwayid == highway.highwayid).fetch()
+		
+		for station in stations:
+			# do something with each station
+			if station.stationclass == 1:
+				# don't count the freeway onramp loop data
+				for detector in station.detectors:
+					# do something with each detector in each station grouping
+					logging.info(detector)
+			
 	
 		self.response.out.write('''
         	<html>
           		<body>
-				Your input was freeway %s %s, interval %s, and date %s
+				Your input was freeway %s %s, interval %s, and date %s<br/>
+				Stations: %s
             			<form action ="/">
               		 	  <input type="submit" name="Home" value="Home"/>
             			</form>
           		</body>
        	 	</html>
-        	'''% (fwaysplit[0], fwaysplit[1], interval, date))
+        	'''% (fwayname, fwaydir, interval, date, stations))
 
 
 class Q2Handler(BaseHandler):

@@ -78,6 +78,51 @@ class DailySpeedSumPipeline(base_handler.PipelineBase):
     yield StoreOutput("DailySpeedSum", filekey, output)
 
 
+def hourly_speed_sum_map(data):
+	"""Daily Speed Sum map function"""
+	(byte_offset, line_value) = data
+	columns = split_into_columns(line_value)
+	if columns[3] != 'speed':
+		# replace the space (' ') character with 'T'
+		dtime = re.sub(' ', 'T', columns[1][:13])
+		yield ("%s_%s" % (columns[0], dtime), columns[3])
+
+
+def hourly_speed_sum_reduce(key, values):
+	"""Daily Speed Sum reduce function."""
+	yield "%s: %s, %s\n" % (key, sum([int(value) for value in values]), len(values))
+
+
+class HourlySpeedSumPipeline(base_handler.PipelineBase):
+  """A pipeline to run hourly_speed_sum.
+
+  Args:
+    blobkey: blobkey to process as string. Should be a zip archive with
+      text files inside.
+  """
+
+
+  def run(self, filekey, blobkey):
+    """ run the HourlySpeedSum MapReduce job
+	      
+    Setup the MapReduce pipeline and yield StoreOutput function
+	"""
+    output = yield mapreduce_pipeline.MapreducePipeline(
+        "hourly_speed_sum",
+        "map_reduce.hourly_speed_sum_map",
+        "map_reduce.hourly_speed_sum_reduce",
+        "mapreduce.input_readers.BlobstoreZipLineInputReader",
+        "mapreduce.output_writers.BlobstoreOutputWriter",
+		mapper_params={
+			"blob_keys": blobkey,
+        },
+        reducer_params={
+            "mime_type": "text/plain",
+        },
+        shards=16)
+    yield StoreOutput("HourlySpeedSum", filekey, output)
+
+
 class StoreOutput(base_handler.PipelineBase):
   """A pipeline to store the result of the MapReduce job in the database.
 
@@ -97,6 +142,10 @@ class StoreOutput(base_handler.PipelineBase):
 	  blob_key = blobstore.BlobKey(output[0])
 	  if blob_key:
 	    m.daily_speed_sum = blob_key
+    elif mr_type == "HourlySpeedSum":
+      blob_key = blobstore.BlobKey(output[0])
+      if blob_key:
+        m.hourly_speed_sum = blob_key
 
     m.put()
 
@@ -116,6 +165,11 @@ class IndexHandler(webapp2.RequestHandler):
     if self.request.get("daily_speed_sum"):
       logging.info("Starting daily speed sum...")
       pipeline = DailySpeedSumPipeline(filekey, blob_key)
+      pipeline.start()
+      self.redirect(pipeline.base_path + "/status?root=" + pipeline.pipeline_id)
+    elif self.request.get("hourly_speed_sum"):
+      logging.info("Starting hourly speed sum...")
+      pipeline = HourlySpeedSumPipeline(filekey, blob_key)
       pipeline.start()
       self.redirect(pipeline.base_path + "/status?root=" + pipeline.pipeline_id)
     else:
@@ -308,7 +362,7 @@ def split_aggregate_output(s):
 	# speed sum and count values are split with a "," character
 	speed_sum_count = value.split(",")
 	speed_sum = speed_sum_count[0]
-	speed_count = re.sub('\n', '', speed_sum_count[1])
+	speed_count = speed_sum_count[1]
 	# if this datestamp includes the time as well, it needs to be extracted
 	# split on the "T" character (as used in ISO 8601 datetimes)
 	if re.search("T", datestamp):
@@ -355,7 +409,10 @@ def import_aggregate_data(entity):
 		timestamp = None
 		if detectorentry_dict['timestamp']:
 			# there is a timestamp - set it for the SpeedSum object
-			timestamp = time.strptime(detectorentry_dict['timestamp'], "%H:%M")
+			if interval == 'hourly_speed':
+				timestamp = datetime.datetime.strptime(detectorentry_dict['timestamp'], "%H").time()
+			else:
+				timestamp = datetime.datetime.strptime(detectorentry_dict['timestamp'], "%H:%M").time()
 		else:
 			# there is no timestamp - likely a daily sum
 			timestamp = datetime.time(0,0)
@@ -374,13 +431,13 @@ def import_aggregate_data(entity):
 				setattr(entry, 'daily_speed', speed_sum)
 			elif interval == 'hourly_speed':
 				# this is a hourly_speed (repeated) property
-				setattr(entry, 'hourly_speed', speed_sum)
+				entry.hourly_speed.append(speed_sum)
 			elif interval == 'fifteenmin_speed':
 				# this is a fifteenmin_speed (repeated) property
-				setattr(entry, 'fifteenmin_speed', speed_sum)
+				entry.fifteenmin_speed.append(speed_sum)
 			elif interval == 'fivemin_speed':
 				# this is a fivemin_speed (repeated) property
-				setattr(entry, 'fivemin_speed', speed_sum)
+				entry.fivemin_speed.append(speed_sum)
 			else:
 				logging.error("Unknown interval:%s", interval)
 		else:
@@ -396,13 +453,13 @@ def import_aggregate_data(entity):
 				setattr(entry, 'daily_speed', speed_sum)
 			elif interval == 'hourly_speed':
 				# this is a hourly_speed (repeated) property
-				setattr(entry, 'hourly_speed', speed_sum)
+				entry.hourly_speed.append(speed_sum)
 			elif interval == 'fifteenmin_speed':
 				# this is a fifteenmin_speed (repeated) property
-				setattr(entry, 'fifteenmin_speed', speed_sum)
+				entry.fifteenmin_speed.append(speed_sum)
 			elif interval == 'fivemin_speed':
 				# this is a fivemin_speed (repeated) property
-				setattr(entry, 'fivemin_speed', speed_sum)
+				entry.fivemin_speed.append(speed_sum)
 			else:
 				logging.error("Unknown interval:%s", interval)
 
