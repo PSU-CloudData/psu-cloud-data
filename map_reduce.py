@@ -333,11 +333,9 @@ def import_aggregate_data(entity):
 	blob_key = params['blob_keys']
 	
 	# get the blob_keys that were passed to this function to determine filename
-	logging.info("Got key:%s", blob_key)
 	blob_reader = blobstore.BlobReader(blob_key, buffer_size=1048576)
 	if blob_reader:
 		# the filename helps us to determine what interval this data is for
-		logging.info("Got filename:%s", blob_reader.blob_info.filename)
 		interval = None
 		if re.search('daily', blob_reader.blob_info.filename):
 			interval = 'daily_speed'
@@ -407,12 +405,8 @@ def import_aggregate_data(entity):
 				setattr(entry, 'fivemin_speed', speed_sum)
 			else:
 				logging.error("Unknown interval:%s", interval)
-		logging.info(speed_sum)
-		logging.info(entry)
-		if entry:
-			yield op.db.Put(entry)
-		else:
-			logging.error("Entry is equal to None")
+
+		yield op.db.Put(entry)
 	else:
 		logging.error("No blob was found for key %s", blob_key)
 

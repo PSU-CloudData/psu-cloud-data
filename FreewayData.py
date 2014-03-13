@@ -66,7 +66,7 @@ class DetectorEntry(ndb.Model):
 	"""
 	date = ndb.DateProperty(indexed=True)
 	detector = ndb.KeyProperty(indexed=True)
-	daily_speed = SpeedSum()
+	daily_speed = ndb.StructuredProperty(SpeedSum)
 	hourly_speed = ndb.StructuredProperty(SpeedSum, repeated=True)
 	fifteenmin_speed = ndb.StructuredProperty(SpeedSum, repeated=True)
 	fivemin_speed = ndb.StructuredProperty(SpeedSum, repeated=True)
