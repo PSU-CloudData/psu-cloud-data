@@ -294,9 +294,49 @@ class Q3Handler(BaseHandler):
 	Handle running query 3 on over the datastore given user input
 	"""
 	def post(self):
+
+# get all of the info from the user interaction the important variables when done are:
+# fway: The freeway
+# dir: The freeway direction N E S W
+# sday: start day: Monday Tuesday ...
+# sdate: start date of form 09/12/2011
+# eday: end day: Monday Tuesday ...
+# edate: end date of form 09/12/2011
+
 		freeway = self.request.get('q3freeway')
+		hold= freeway.split()
+		i=iter(hold)
+		fway = i.next()
+		dir = i.next()
 		start = self.request.get('q3sdate')
+		hold2 = start.split()
+		i2=iter(hold)
+		sday = i2.next()
+		sdate = i2.next()
 		end = self.request.get('q3edate')
+		hold3 =end.split()
+		i3=iter(hold)
+		eday = i3.next()
+		edate = i3.next()
+
+# get Highwayid of highway= highwayname and direction = dir, create a list of them (bad approach but it works)
+
+		stationget = Highway.query(ndb.AND(Highway.highwayname == fway, Highway.shortdirection == dir))
+		hwyid = stationget.fetch(projection=[Highway.highwayid])
+		stationlist = list()
+		for highway in hwyid:
+		  stationlist.append(highway.highwayid)
+
+# Get the stations in the highway returned above		
+
+		stations = Station.query(Station.highwayid.IN(stationlist))
+		sthold = stations.fetch(projection=[Station.detectors.detectorid])
+		
+		#detectorlist = list()
+		#for station in sthold:
+                  #detectorlist.append(station.detectors)
+
+
 		self.response.out.write('''
         	<html>
           		<body>
