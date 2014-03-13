@@ -238,18 +238,21 @@ class Q1Handler(BaseHandler):
 	"""
 	def post(self):
 		freeway = self.request.get('q1freeway')
+		fwaysplit = freeway.split()
 		interval = self.request.get('q1interval')
 		date = self.request.get('q1date')
+		highwaystations = Highway.query(Highway.	
+	
 		self.response.out.write('''
         	<html>
           		<body>
-				Your input was freeway %s, interval %s, and date %s
+				Your input was freeway %s %s, interval %s, and date %s
             			<form action ="/">
               		 	  <input type="submit" name="Home" value="Home"/>
             			</form>
           		</body>
        	 	</html>
-        	'''% (freeway, interval, date))
+        	'''% (fwaysplit[0], fwaysplit[1], interval, date))
 
 
 class Q2Handler(BaseHandler):
