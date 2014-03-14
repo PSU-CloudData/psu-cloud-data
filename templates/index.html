@@ -50,7 +50,7 @@
 					</tr>
 					{% for file in files %}
 					<tr>
-						<td><input type="radio" name="file_radio" onclick="updateImportForm('{{ file.blobkey }}','{{ file.blobkey }}','{{ ile.filename }}');"></td>
+						<td><input type="radio" name="file_radio" onclick="updateImportForm('{{ file.blobkey }}','{{ file.blobkey }}','{{ file.filename }}');"></td>
 						<td><a href="/file/{{ file.blobkey }}/download">{{ file.filename }}</a></td>
 						<td>{{ file.creation }}</td>
 						<td>{{ file.content_type }}</td>
