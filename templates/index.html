@@ -171,6 +171,9 @@
 				  $( "#q3sdate" ).datepicker('setDate', "09/15/2011");
 				  $( "#q3edate" ).datepicker('setDate', "09/15/2011");
 				  $( "#q4date" ).datepicker('setDate', "09/15/2011");
+
+				  $( "#q3sdate" ).datepicker("option", "dateFormat", "DD mm/dd/yy" );
+				  $( "#q3edate" ).datepicker("option", "dateFormat", "DD mm/dd/yy" );
 				  });
 
                              	var mid = ["2","3","4"];
@@ -189,23 +192,23 @@
 				<form action="/Queryone" method="post">
 					Freeway:     <select name="q1freeway">
 							<optgroup label="I-205">
-								<option value="I-205N">I-205 N</option>
-								<option value="I-205S">I-205 S</option>
+								<option value="I-205 N">I-205 N</option>
+								<option value="I-205 S">I-205 S</option>
 							<optgroup label="OR 217">
-								<option value="OR217N">OR 217 N</option>
-								<option value="OR217S">OR 217 S</option>
+								<option value="OR217 N">OR 217 N</option>
+								<option value="OR217 S">OR 217 S</option>
 							<optgroup label="I-5">
-								<option value="I-5N">I-5 N</option>
-								<option value="I-5S">I-5 S</option>
+								<option value="I-5 N">I-5 N</option>
+								<option value="I-5 S">I-5 S</option>
 							<optgroup label="US 26">
-								<option value="US26E">US 26 E</option>
-								<option value="US26W">US 26 W</option>
+								<option value="US26 E">US 26 E</option>
+								<option value="US26 W">US 26 W</option>
 							<optgroup label="I-405">
-								<option value="I-405N">I-405 N</option>
-								<option value="I-405S">I-405 S</option>
+								<option value="I-405 N">I-405 N</option>
+								<option value="I-405 S">I-405 S</option>
 							<optgroup label="I-84">
-								<option value="I-84E">I-84 E</option>
-								<option value="I-84W">I-84 W</option>
+								<option value="I-84 E">I-84 E</option>
+								<option value="I-84 W">I-84 W</option>
 						     </select><br/>
 					Interval:    <select name="q1interval">
 							<option value="5Min">5 Min</option>
@@ -225,23 +228,23 @@
 				<form action="/Querytwo" method="post">
 					Freeway:     <select name="q2freeway">
 							<optgroup label="I-205">
-								<option value="I-205N">I-205 N</option>
-								<option value="I-205S">I-205 S</option>
+								<option value="I-205 N">I-205 N</option>
+								<option value="I-205 S">I-205 S</option>
 							<optgroup label="OR 217">
-								<option value="OR217N">OR 217 N</option>
-								<option value="OR217S">OR 217 S</option>
+								<option value="OR217 N">OR 217 N</option>
+								<option value="OR217 S">OR 217 S</option>
 							<optgroup label="I-5">
-								<option value="I-5N">I-5 N</option>
-								<option value="I-5S">I-5 S</option>
+								<option value="I-5 N">I-5 N</option>
+								<option value="I-5 S">I-5 S</option>
 							<optgroup label="US 26">
-								<option value="US26E">US 26 E</option>
-								<option value="US26W">US 26 W</option>
+								<option value="US26 E">US 26 E</option>
+								<option value="US26 W">US 26 W</option>
 							<optgroup label="I-405">
-								<option value="I-405N">I-405 N</option>
-								<option value="I-405S">I-405 S</option>
+								<option value="I-405 N">I-405 N</option>
+								<option value="I-405 S">I-405 S</option>
 							<optgroup label="I-84">
-								<option value="I-84E">I-84 E</option>
-								<option value="I-84W">I-84 W</option>
+								<option value="I-84 E">I-84 E</option>
+								<option value="I-84 W">I-84 W</option>
 						     </select><br/>
 					<label>Start Date: <input type="text" name="q1sdate" id="q2sdate"/></label><br/>
 					<label>End Date: <input type="text" name="q1edate" id="q2edate"></label><br/>
@@ -255,23 +258,23 @@
 				<form action="/Querythree " method="post">
 					Freeway:     <select name="q3freeway">
 							<optgroup label="I-205">
-								<option value="I-205N">I-205 N</option>
-								<option value="I-205S">I-205 S</option>
+								<option value="I-205 N">I-205 N</option>
+								<option value="I-205 S">I-205 S</option>
 							<optgroup label="OR 217">
-								<option value="OR217N">OR 217 N</option>
-								<option value="OR217S">OR 217 S</option>
+								<option value="OR217 N">OR 217 N</option>
+								<option value="OR217 S">OR 217 S</option>
 							<optgroup label="I-5">
-								<option value="I-5N">I-5 N</option>
-								<option value="I-5S">I-5 S</option>
+								<option value="I-5 N">I-5 N</option>
+								<option value="I-5 S">I-5 S</option>
 							<optgroup label="US 26">
-								<option value="US26E">US 26 E</option>
-								<option value="US26W">US 26 W</option>
+								<option value="US26 E">US 26 E</option>
+								<option value="US26 W">US 26 W</option>
 							<optgroup label="I-405">
-								<option value="I-405N">I-405 N</option>
-								<option value="I-405S">I-405 S</option>
+								<option value="I-405 N">I-405 N</option>
+								<option value="I-405 S">I-405 S</option>
 							<optgroup label="I-84">
-								<option value="I-84E">I-84 E</option>
-								<option value="I-84W">I-84 W</option>
+								<option value="I-84 E">I-84 E</option>
+								<option value="I-84 W">I-84 W</option>
 						     </select><br/>
 					<label>Start Date: <input type="text" name="q1sdate" id="q3sdate"/></label><br/>
 					<label>End Date: <input type="text" name="q1edate" id="q3edate"></label><br/>
@@ -285,23 +288,23 @@
 				<form action="/Queryfour" method="post">
 					Freeway:     <select name="q4freeway">
 							<optgroup label="I-205">
-								<option value="I-205N">I-205 N</option>
-								<option value="I-205S">I-205 S</option>
+								<option value="I-205 N">I-205 N</option>
+								<option value="I-205 S">I-205 S</option>
 							<optgroup label="OR 217">
-								<option value="OR217N">OR 217 N</option>
-								<option value="OR217S">OR 217 S</option>
+								<option value="OR217 N">OR 217 N</option>
+								<option value="OR217 S">OR 217 S</option>
 							<optgroup label="I-5">
-								<option value="I-5N">I-5 N</option>
-								<option value="I-5S">I-5 S</option>
+								<option value="I-5 N">I-5 N</option>
+								<option value="I-5 S">I-5 S</option>
 							<optgroup label="US 26">
-								<option value="US26E">US 26 E</option>
-								<option value="US26W">US 26 W</option>
+								<option value="US26 E">US 26 E</option>
+								<option value="US26 W">US 26 W</option>
 							<optgroup label="I-405">
-								<option value="I-405N">I-405 N</option>
-								<option value="I-405S">I-405 S</option>
+								<option value="I-405 N">I-405 N</option>
+								<option value="I-405 S">I-405 S</option>
 							<optgroup label="I-84">
-								<option value="I-84E">I-84 E</option>
-								<option value="I-84W">I-84 W</option>
+								<option value="I-84 E">I-84 E</option>
+								<option value="I-84 W">I-84 W</option>
 						     </select><br/>
 					Time:	     <select name="q4hour">
 							<option value= "1">1</option>

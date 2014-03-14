@@ -276,6 +276,10 @@ class Q2Handler(BaseHandler):
 	"""
 	def post(self):
 		freeway = self.request.get('q2freeway')
+		hold= freeway.split()
+		i=iter(hold)
+		fway = i.next()
+		dir = i.next()
 		start = self.request.get('q2sdate')
 		end = self.request.get('q2edate')
 		self.response.out.write('''
@@ -330,16 +334,16 @@ class Q3Handler(BaseHandler):
 # Get the stations in the highway returned above		
 
 		stations = Station.query(Station.highwayid.IN(stationlist))
-		sthold = stations.fetch(projection=[Station.detectors.detectorid])
+                stat = stations.fetch(projection=[Station.detectors.detectorid])
+ 		#for station in stat:
+                  
 		
-		#detectorlist = list()
-		#for station in sthold:
-                  #detectorlist.append(station.detectors)
 
 
 		self.response.out.write('''
         	<html>
           		<body>
+				
             			<form action ="/">
               		 	  <input type="submit" name="Home" value="Home"/>
             			</form>
