@@ -271,9 +271,14 @@ class IndexHandler(webapp2.RequestHandler):
       pipeline = HourlySpeedSumPipeline(filekey, blob_key)
       pipeline.start()
       self.redirect(pipeline.base_path + "/status?root=" + pipeline.pipeline_id)
-	elif self.request.get("hourly_speed_sum"):
-      logging.info("Starting hourly speed sum...")
-      pipeline = HourlySpeedSumPipeline(filekey, blob_key)
+	elif self.request.get("fifteen_min_speed_sum"):
+      logging.info("Starting fifteen minute speed sum...")
+      pipeline = FifteenMinSpeedSumPipeline(filekey, blob_key)
+      pipeline.start()
+      self.redirect(pipeline.base_path + "/status?root=" + pipeline.pipeline_id)
+	elif self.request.get("five_min_speed_sum"):
+      logging.info("Starting five minute speed sum...")
+      pipeline = FiveMinSpeedSumPipeline(filekey, blob_key)
       pipeline.start()
       self.redirect(pipeline.base_path + "/status?root=" + pipeline.pipeline_id)
     else:
