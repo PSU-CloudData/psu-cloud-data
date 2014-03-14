@@ -9,21 +9,34 @@
 		<script src="//code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
 	</head>
 	<body>
-		<div id="center">
-			<!-- File upload form -->
-			<form action="{{ upload_url }}" method="post"
-				enctype="multipart/form-data">
-				<h3>Upload files to the Blobstore</h3>
-				<label for="file">Filename:</label>
-				<input type="file" name="file" id="file"/>
+		<div id="top">
+			<h1>CS410/510 Group Project: Traffic Data Queries using Google App Engine</h1>
+			<p>Shaun Brandt, Neil Gebhard, Edward Kelley, Eric Mumm, Tim Reilly</p>
+		</div>
+		
+		<div class="header">
+			<h3>Upload files to the Blobstore</h3>		
+		</div>
+		<div class="section">
+			<div class="interior">
+				<!-- File upload form -->
+				<form action="{{ upload_url }}" method="post"
+					enctype="multipart/form-data">
+					<label for="file"><strong>File to upload:</strong></label>
+					<input type="file" name="file" id="file"/>
+					<br/><br/>
+					<input type="submit" name="submit" value="Upload"/>
+				</form>
+			</div>
+		</div>
+		<!-- Display uploaded files, and allow for import into Datastore -->
+		<div class="header">
+			<h3>Import files from Blobstore to Datastore</h3>		
+		</div>
+		<div class="section">
+			<div class="interior">
+				<p><strong>Note:</strong> highways.csv, freeway_stations.csv, and freeway_detectors.csv can be imported to Datastore</p>
 				<br/>
-				<input type="submit" name="submit" value="Upload"/>
-			</form>
-			<hr>
-			<!-- Display uploaded files, and allow for import into Datastore -->
-			<div>
-				<h3>Import files from Blobstore to Datastore</h3>
-				<p>highways.csv, freeway_stations.csv, and freeway_detectors.csv can be imported to Datastore</p>
 				{% if file_count %}
 				<table border=1>
 					<tr>
@@ -37,7 +50,7 @@
 					</tr>
 					{% for file in files %}
 					<tr>
-						<td><input type="radio" name="file_radio" onclick="updateImportForm('{{ file.blobkey }}','{{ file.blobkey }}','{{ file.filename }}');"></td>
+						<td><input type="radio" name="file_radio" onclick="updateImportForm('{{ file.blobkey }}','{{ file.blobkey }}','{{ ile.filename }}');"></td>
 						<td><a href="/file/{{ file.blobkey }}/download">{{ file.filename }}</a></td>
 						<td>{{ file.creation }}</td>
 						<td>{{ file.content_type }}</td>
@@ -47,7 +60,6 @@
 					</tr>
 					{% endfor %}
 				</table>
-				<br/>
 				<form action="/import" method="post">
 					Input File: <label id="fileName">none selected</label>
 					<input type="hidden" name="filekey" id="filekey" value=""/>
@@ -56,14 +68,19 @@
 					<input type="submit" id="import" name="import" value="Import" disabled="true"/>
 				</form>
 				{% else %}
-				<div>No files uploaded yet!</div>
+				<strong>No files uploaded yet!</strong>
 				{% endif %}
+				</div>
 			</div>
-			<hr/>
+		</div>
+		<div class="header">
 			<h3>View Datastore entities</h3>
-			<p>Highway, Station, and Detector data stored in Datastore</p>
+		</div>
+		<div class="section">
+			<div class="interior">
+			<p>Highway, Station, and Detector data stored in Datastore:</p>
+			<br/>
 			<!-- Highways Datastore entities table -->
-			<div>
 				{% if hwys_count %}
 				<h4>Highways</h4>
 				<table border=1>
@@ -85,11 +102,11 @@
 					</tr>
 				</table>
 				{% else %}
-				No highways found - upload highways.csv and perform import above.
+				<strong>No highways found - upload highways.csv and perform import above.</strong>
 				{% endif %}
 			</div>
 			<!-- Stations Datastore entities table -->
-			<div>
+			<div class="interior">
 				{% if stns_count %}
 				<h4>Stations</h4>
 				<table border=1>
@@ -129,66 +146,66 @@
 					</tr>
 				</table>
 				{% else %}
-				No stations found - upload freeway_stations.csv and perform import above</a>.
+				<strong>No stations found - upload freeway_stations.csv and perform import above</strong>.
 				{% endif %}
 			</div>
+		</div>
+		<div class="header">
+			<h3>Run MapReduce jobs on imported data</h3>		
+		</div>
+		<div class="section">
 			<!-- MapReduce interface -->
-			<hr/>
-			<div>
-				<h3>Run MapReduce jobs on imported data</h3>
-				<p>Select an input file above, and run a MapReduce job on it</p>
+			<div class="interior">
+				<p>Select an input file from the previous section and run a MapReduce job on it:</p>
+				<br />
 				<form action="/map_reduce" method="post">
-					Input File: <label id="mr_fileName">none selected</label>
+					<strong>Input File:</strong> <label id="mr_fileName">none selected</label>
 					<input type="hidden" name="filekey" id="mr_filekey" value=""/>
 					<input type="hidden" name="blobkey" id="mr_blobkey" value=""/>
-					<br />
-					<br />
+					<br /><br/>
 					<table>
 						<tr>
 							<td><input type="submit" id="daily_speed_sum" name="daily_speed_sum" value="DailySpeedSum" disabled="true"></td>
-						</tr>
-					
-						<tr>
 							<td><input type="submit" id="hourly_speed_sum" name="hourly_speed_sum" value="HourlySpeedSum" disabled="true"></td>
 						</tr>
 					</table>
 				</form>
 			</div>
-			<!-- Query interface -->
-			<hr/>
+		</div>
+		<!-- Query interface -->
+		<div class="header">
+			<h3>Run queries</h3>
+		</div>
+		<div class="section">
 			<script>
 				$(function() {
-				  $( "#q1date" ).datepicker({ minDate: "09/15/2011"});
-				  $( "#q2sdate" ).datepicker({ minDate: "09/15/2011"});
-				  $( "#q2edate" ).datepicker({ minDate: "09/15/2011"});
-				  $( "#q3sdate" ).datepicker({ minDate: "09/15/2011", beforeShowDay: midweek});
-				  $( "#q3edate" ).datepicker({ minDate: "09/15/2011", beforeShowDay: midweek});
-				  $( "#q4date" ).datepicker({ minDate: "09/15/2011"});
+				$( "#q1date" ).datepicker({ minDate: "09/15/2011"});
+				$( "#q2sdate" ).datepicker({ minDate: "09/15/2011"});
+				$( "#q2edate" ).datepicker({ minDate: "09/15/2011"});
+				$( "#q3sdate" ).datepicker({ minDate: "09/15/2011", beforeShowDay: midweek});
+				$( "#q3edate" ).datepicker({ minDate: "09/15/2011", beforeShowDay: midweek});
+				$( "#q4date" ).datepicker({ minDate: "09/15/2011"});
 
-				  $( "#q1date" ).datepicker('setDate', "09/15/2011");
-				  $( "#q2sdate" ).datepicker('setDate', "09/15/2011");
-				  $( "#q2edate" ).datepicker('setDate', "09/15/2011");
-				  $( "#q3sdate" ).datepicker('setDate', "09/15/2011");
-				  $( "#q3edate" ).datepicker('setDate', "09/15/2011");
-				  $( "#q4date" ).datepicker('setDate', "09/15/2011");
-
-				  $( "#q3sdate" ).datepicker("option", "dateFormat", "DD mm/dd/yy" );
-				  $( "#q3edate" ).datepicker("option", "dateFormat", "DD mm/dd/yy" );
-				  });
-
+				$( "#q1date" ).datepicker('setDate', "09/15/2011");
+				$( "#q2sdate" ).datepicker('setDate', "09/15/2011");
+				$( "#q2edate" ).datepicker('setDate', "09/15/2011");
+			    $( "#q3sdate" ).datepicker('setDate', "09/15/2011");
+				$( "#q3edate" ).datepicker('setDate', "09/15/2011");
+				$( "#q4date" ).datepicker('setDate', "09/15/2011");
+				$( "#q3sdate" ).datepicker("option", "dateFormat", "DD mm/dd/yy" );
+				$( "#q3edate" ).datepicker("option", "dateFormat", "DD mm/dd/yy" );
+				});
                              	var mid = ["2","3","4"];
 				function midweek(date){
-				  var sdate = date.getDay().toString();
-				  if($.inArray(sdate, mid) == -1) return [false, ""];
-				  else return[true, ""];
-          			}
+				var sdate = date.getDay().toString();
+				if($.inArray(sdate, mid) == -1) return [false, ""];
+				else return[true, ""];
+				}
 			</script>
-			
-			<h3>Query #1</h3>
-			<p>Single-Day Station Travel Times</p>
 			<!-- Query 1 -->
-			<div>
-				
+			<div class="query">
+				<h3>Query #1</h3>
+				<p>Single-Day Station Travel Times</p>				
 				<form action="/Queryone" method="post">
 					Freeway:     <select name="q1freeway">
 							<optgroup label="I-205">
@@ -209,22 +226,21 @@
 							<optgroup label="I-84">
 								<option value="I-84 E">I-84 E</option>
 								<option value="I-84 W">I-84 W</option>
-						     </select><br/>
+							</select><br/>
 					Interval:    <select name="q1interval">
 							<option value="5Min">5 Min</option>
 							<option value="15Min">15 Min</option>
 							<option value="1Hour">1 Hour</option>
 							<option value="Day">1 Day</option>
-						     </select><br/>
+							</select><br/>
 					<label>Date:<input type="text" name="q1date" id="q1date"/></label><br/>
 					<input type="submit" name="q1run" value="Run"/>
-				</form>
-				
+				</form>				
 			</div>
-			<h3>Query #2</h3>
-			<p>Hourly Corridor Travel Times</p>
-			<!-- Query 2 -->
-			<div>
+				<!-- Query 2 -->
+			<div class="query">
+				<h3>Query #2</h3>
+				<p>Hourly Corridor Travel Times</p>
 				<form action="/Querytwo" method="post">
 					Freeway:     <select name="q2freeway">
 							<optgroup label="I-205">
@@ -245,16 +261,16 @@
 							<optgroup label="I-84">
 								<option value="I-84 E">I-84 E</option>
 								<option value="I-84 W">I-84 W</option>
-						     </select><br/>
+							</select><br/>
 					<label>Start Date: <input type="text" name="q1sdate" id="q2sdate"/></label><br/>
 					<label>End Date: <input type="text" name="q1edate" id="q2edate"></label><br/>
 					<input type="submit" name="q2run" value="Run"/>
 				</form>		
 			</div>
-			<h3>Query #3</h3>
-			<p>Mid-Weekday Peak Period Travel Times</p>
 			<!-- Query 3 -->
-			<div>
+			<div class="query">
+				<h3>Query #3</h3>
+				<p>Mid-Weekday Peak Period Travel Times</p>			
 				<form action="/Querythree " method="post">
 					Freeway:     <select name="q3freeway">
 							<optgroup label="I-205">
@@ -275,16 +291,16 @@
 							<optgroup label="I-84">
 								<option value="I-84 E">I-84 E</option>
 								<option value="I-84 W">I-84 W</option>
-						     </select><br/>
+							</select><br/>
 					<label>Start Date: <input type="text" name="q1sdate" id="q3sdate"/></label><br/>
 					<label>End Date: <input type="text" name="q1edate" id="q3edate"></label><br/>
 					<input type="submit" name="q3run" value="Run"/>
 				</form>			
 			</div>
-			<h3>Query #4</h3>
-			<p>Station-to-Station Travel Times</p>
 			<!-- Query 4 -->
-			<div>
+			<div class="query">
+				<h3>Query #4</h3>
+				<p>Station-to-Station Travel Times</p>				
 				<form action="/Queryfour" method="post">
 					Freeway:     <select name="q4freeway">
 							<optgroup label="I-205">
@@ -305,7 +321,7 @@
 							<optgroup label="I-84">
 								<option value="I-84 E">I-84 E</option>
 								<option value="I-84 W">I-84 W</option>
-						     </select><br/>
+							</select><br/>
 					Time:	     <select name="q4hour">
 							<option value= "1">1</option>
 							<option value= "2">2</option>
@@ -319,8 +335,8 @@
 							<option value= "10">10</option>
 							<option value= "11">11</option>
 							<option value= "12">12</option>
-						     </select>
-						     <select name="q4min">
+							</select>
+							<select name="q4min">
 							<option value="00">00</option>
 							<option value="05">05</option>
 							<option value="10">10</option>
@@ -333,11 +349,11 @@
 							<option value="45">45</option>
 							<option value="50">50</option>
 							<option value="55">55</option>
-						     </select>
-						     <select name="q4ampm">
+							</select>
+							<select name="q4ampm">
 							<option value="AM">AM</option>
 							<option value="PM">PM</option>
-						     </select><br/>
+							</select><br/>
 					<label>Date:<input type="text" name="q4date" id="q4date"/></label><br/>
 					<input type="submit" name="q4run" value="Run"/>
 				</form>						
