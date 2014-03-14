@@ -121,8 +121,99 @@ class HourlySpeedSumPipeline(base_handler.PipelineBase):
         },
         shards=16)
     yield StoreOutput("HourlySpeedSum", filekey, output)
+	
+def fifteen_min_speed_sum_map(data):
+	"""Fifteen Minute Speed Sum map function"""
+	(byte_offset, line_value) = data
+	columns = split_into_columns(line_value)
+	if columns[3] != 'speed':
+		# replace the space (' ') character with 'T'
+		# dtime = re.sub(' ', 'T', columns[1][:13])
+		# yield ("%s_%s" % (columns[0], dtime), columns[3])
+		# 
+		# TO DO: Implement the fifteen minute mapper function
 
 
+def fifteen_min_speed_sum_reduce(key, values):
+	"""Fifteen Minute Speed Sum reduce function."""
+	yield "%s: %s, %s\n" % (key, sum([int(value) for value in values]), len(values))
+
+
+class FifteenMinSpeedSumPipeline(base_handler.PipelineBase):
+  """A pipeline to run fifteen_min_speed_sum.
+
+  Args:
+    blobkey: blobkey to process as string. Should be a zip archive with
+      text files inside.
+  """
+
+
+  def run(self, filekey, blobkey):
+    """ run the FifteenMinSpeedSum MapReduce job
+	      
+    Setup the MapReduce pipeline and yield StoreOutput function
+	"""
+    output = yield mapreduce_pipeline.MapreducePipeline(
+        "fifteen_min_speed_sum",
+        "map_reduce.fifteen_min_speed_sum_map",
+        "map_reduce.fifteen_min_speed_sum_reduce",
+        "mapreduce.input_readers.BlobstoreZipLineInputReader",
+        "mapreduce.output_writers.BlobstoreOutputWriter",
+		mapper_params={
+			"blob_keys": blobkey,
+        },
+        reducer_params={
+            "mime_type": "text/plain",
+        },
+        shards=16)
+    yield StoreOutput("FifteenMinSpeedSum", filekey, output)
+
+def five_min_speed_sum_map(data):
+	"""Five Minute Speed Sum map function"""
+	(byte_offset, line_value) = data
+	columns = split_into_columns(line_value)
+	if columns[3] != 'speed':
+		# replace the space (' ') character with 'T'
+		# dtime = re.sub(' ', 'T', columns[1][:13])
+		# yield ("%s_%s" % (columns[0], dtime), columns[3])
+		# 
+		# TO DO: Implement the five minute mapper function
+
+
+def five_min_speed_sum_reduce(key, values):
+	"""Five Minute Speed Sum reduce function."""
+	yield "%s: %s, %s\n" % (key, sum([int(value) for value in values]), len(values))
+
+
+class FiveMinSpeedSumPipeline(base_handler.PipelineBase):
+  """A pipeline to run five_min_speed_sum.
+
+  Args:
+    blobkey: blobkey to process as string. Should be a zip archive with
+      text files inside.
+  """
+
+
+  def run(self, filekey, blobkey):
+    """ run the FiveMinSpeedSum MapReduce job
+	      
+    Setup the MapReduce pipeline and yield StoreOutput function
+	"""
+    output = yield mapreduce_pipeline.MapreducePipeline(
+        "five_min_speed_sum",
+        "map_reduce.five_min_speed_sum_map",
+        "map_reduce.five_min_speed_sum_reduce",
+        "mapreduce.input_readers.BlobstoreZipLineInputReader",
+        "mapreduce.output_writers.BlobstoreOutputWriter",
+		mapper_params={
+			"blob_keys": blobkey,
+        },
+        reducer_params={
+            "mime_type": "text/plain",
+        },
+        shards=16)
+    yield StoreOutput("FiveMinSpeedSum", filekey, output)
+	
 class StoreOutput(base_handler.PipelineBase):
   """A pipeline to store the result of the MapReduce job in the database.
 
@@ -146,6 +237,14 @@ class StoreOutput(base_handler.PipelineBase):
       blob_key = blobstore.BlobKey(output[0])
       if blob_key:
         m.hourly_speed_sum = blob_key
+	elif mr_type == "FifteenMinSpeedSum":
+      blob_key = blobstore.BlobKey(output[0])
+      if blob_key:
+        m.fifteen_min_speed_sum = blob_key
+	elif mr_type == "FiveMinSpeedSum":
+      blob_key = blobstore.BlobKey(output[0])
+      if blob_key:
+        m.five_min_speed_sum = blob_key
 
     m.put()
 
