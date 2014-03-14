@@ -275,6 +275,12 @@ class Q2Handler(BaseHandler):
 	Handle running query 2 on over the datastore given user input
 	"""
 	def post(self):
+# get the user input, imortant varaiables at the end are.
+# fway: the freeway associated with Highway.highwayname
+# dir: the highway direction associated with Highway.shortdirection
+# start: the date to start query on
+# end: the date to end query on
+
 		freeway = self.request.get('q2freeway')
 		hold= freeway.split()
 		i=iter(hold)
@@ -282,6 +288,23 @@ class Q2Handler(BaseHandler):
 		dir = i.next()
 		start = self.request.get('q2sdate')
 		end = self.request.get('q2edate')
+
+# get Highwayid of highway= highwayname and direction = dir, create a list of them (bad approach but it works)
+
+		stationget = Highway.query(ndb.AND(Highway.highwayname == fway, Highway.shortdirection == dir))
+		hwyid = stationget.fetch(projection=[Highway.highwayid])
+		stationlist = list()
+		for highway in hwyid:
+		  stationlist.append(highway.highwayid)
+
+# Get the stations in the highway returned above		
+
+		stations = Station.query(Station.highwayid.IN(stationlist))
+                stat = stations.fetch(projection=[Station.detectors.detectorid])
+
+
+
+
 		self.response.out.write('''
         	<html>
           		<body>
@@ -357,11 +380,42 @@ class Q4Handler(BaseHandler):
 	Handle running query 4 on over the datastore given user input
 	"""
 	def post(self):
-		freeway = self.request.get('q4freeway')
+# get all of the user info: important variables are:
+# fway: the highway.highwayname
+# dir: the highway.shortdirection
+# time: the time to query on, no range, just that time.
+# date: the date for DetectorEntity
+
+# delete the self.response.out.write(time) when implimented, it is a check
+
+		freeway = self.request.get('q4freeway')		
+		hold= freeway.split()
+		i=iter(hold)
+		fway = i.next()
+		dir = i.next()
+
 		hour = self.request.get('q4hour')
 		min = self.request.get('q4min')
 		ampm = self.request.get('q4ampm')
 		date = self.request.get('q4date')
+		time = hour + ":" + min + ":00 " + ampm
+		self.response.out.write(time)
+		
+
+# get Highwayid of highway= highwayname and direction = dir, create a list of them (bad approach but it works)
+
+		stationget = Highway.query(ndb.AND(Highway.highwayname == fway, Highway.shortdirection == dir))
+		hwyid = stationget.fetch(projection=[Highway.highwayid])
+		stationlist = list()
+		for highway in hwyid:
+		  stationlist.append(highway.highwayid)
+
+# Get the stations in the highway returned above		
+
+		stations = Station.query(Station.highwayid.IN(stationlist))
+
+
+
 		self.response.out.write('''
         	<html>
           		<body>
