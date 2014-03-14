@@ -271,6 +271,11 @@ class IndexHandler(webapp2.RequestHandler):
       pipeline = HourlySpeedSumPipeline(filekey, blob_key)
       pipeline.start()
       self.redirect(pipeline.base_path + "/status?root=" + pipeline.pipeline_id)
+	elif self.request.get("hourly_speed_sum"):
+      logging.info("Starting hourly speed sum...")
+      pipeline = HourlySpeedSumPipeline(filekey, blob_key)
+      pipeline.start()
+      self.redirect(pipeline.base_path + "/status?root=" + pipeline.pipeline_id)
     else:
 	  logging.info("Unrecognized operation.")
 
