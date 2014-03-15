@@ -38,4 +38,6 @@ function updateImportForm(filekey, blobkey, filename) {
 
   $('#daily_speed_sum').removeAttr('disabled');
   $('#hourly_speed_sum').removeAttr('disabled');
+  $('#fifteen_min_speed_sum').removeAttr('disabled');
+  $('#five_min_speed_sum').removeAttr('disabled');
 }
