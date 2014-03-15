@@ -14,16 +14,16 @@
 				<tr><th>MD5 hash</th><td>{{file_info.md5_hash}}</td>
 				<tr><th>Blob key</th><td>{{file_info.blobkey}}</td></tr>
 				{% if file_info.daily_speed_sum %}
-				<tr><th>Daily Speed Sum</th><td>{{file_info.daily_speed_sum}}</td></tr>
+				<tr><th>Daily Speed Sum</th><td><a href="{{file_info.daily_speed_sum}}">{{file_info.daily_speed_sum}}</a></td></tr>
 				{% endif %}
 				{% if file_info.hourly_speed_sum %}
-				<tr><th>Hourly Speed Sum</th><td>{{file_info.hourly_speed_sum}}</td></tr>
+				<tr><th>Hourly Speed Sum</th><td><a href="{{file_info.hourly_speed_sum}}">{{file_info.hourly_speed_sum}}</td></tr>
 				{% endif %}
 				{% if file_info.fifteenmin_speed_sum %}
-				<tr><th>Fifteen Min. Speed Sum</th><td>{{file_info.fifteenmin_speed_sum}}</td></tr>
+				<tr><th>Fifteen Min. Speed Sum</th><td><a href="{{file_info.fifteenmin_speed_sum}}">{{file_info.fifteenmin_speed_sum}}</td></tr>
 				{% endif %}
 				{% if file_info.fivemin_speed_sum %}
-				<tr><th>Five Min Speed Sum</th><td>{{file_info.fivemin_speed_sum}}</td></tr>
+				<tr><th>Five Min Speed Sum</th><td><a href="{{file_info.fivemin_speed_sum}}">{{file_info.fivemin_speed_sum}}</td></tr>
 				{% endif %}
 			</table>
 			<p><a href="/blobstore/{{file_info.blobkey}}">Download this file</a></p>
