@@ -18,6 +18,7 @@
 import webapp2
 import csv
 import logging
+import urllib
 
 from google.appengine.ext import blobstore
 from google.appengine.ext.webapp import blobstore_handlers
@@ -427,6 +428,51 @@ class Q4Handler(BaseHandler):
        	 	</html>
         	''')
 
+
+class FileInfoHandler(BaseHandler):
+	""" FileInfoHandler class definition
+	
+	Display information about uploaded files
+	"""
+	def get(self, file_id):
+		""" Respond to HTTP GET requests
+	
+		Render a file info page from FileMetadata matching key file_id
+		
+		Args:
+		  file_id: a key that references some FileMetadata entity in the Datastore
+		"""
+		file_key = ndb.Key(FileMetadata, str(urllib.unquote(file_id)).strip())
+		file_info = file_key.get()
+		logging.info("File info:%s for key:%s", file_info, file_key)
+		if not file_info:
+			self.error(404)
+			return
+		self.render_template("file_info.html", {
+							 'file_info': file_info
+							 })
+
+
+class FileDownloadHandler(blobstore_handlers.BlobstoreDownloadHandler):
+	""" FileDownloadHandler class definition
+	
+	Download files from Blobstore
+	"""
+	def get(self, file_id):
+		""" Respond to HTTP GET requests
+		
+		Download files from Blobstore that are referenced by file_id key
+		
+		Args:
+		  file_id a key that references some FileMetadata entity in the Datastore
+		"""
+		file_info = str(urllib.unquote(file_id)).strip()
+		if not file_info:
+			self.error(404)
+			return
+		self.send_blob(BlobInfo.get(file_id), save_as=False)
+
+
 app = webapp2.WSGIApplication([
     ('/', MainHandler),
 	('/upload', UploadHandler),
@@ -434,5 +480,7 @@ app = webapp2.WSGIApplication([
 	('/Queryone', Q1Handler),
 	('/Querytwo', Q2Handler),
 	('/Querythree', Q3Handler),
-	('/Queryfour', Q4Handler)
+	('/Queryfour', Q4Handler),
+	('/file/(.*)', FileInfoHandler),
+	('/blobstore/(.*)', FileDownloadHandler),
 ], debug=True)
