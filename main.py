@@ -19,6 +19,7 @@ import webapp2
 import csv
 import logging
 import urllib
+import datetime
 
 from google.appengine.ext import blobstore
 from google.appengine.ext.webapp import blobstore_handlers
@@ -239,8 +240,7 @@ class Q1Handler(BaseHandler):
 	"""
 	def post(self):
 		freeway = self.request.get('q1freeway')
-		fwayname = freeway[:-1]
-		fwaydir = freeway[-1:]
+		(fwayname, fwaydir) = freeway.split()
 		interval = self.request.get('q1interval')
 		date = self.request.get('q1date')
 		
@@ -249,25 +249,35 @@ class Q1Handler(BaseHandler):
 		stations = Station.query(Station.highwayid == highway.highwayid).fetch()
 		
 		for station in stations:
-			# do something with each station
 			if station.stationclass == 1:
 				# don't count the freeway onramp loop data
+				speed_sums = []
 				for detector in station.detectors:
-					# do something with each detector in each station grouping
-					logging.info(detector)
-			
-	
-		self.response.out.write('''
-        	<html>
-          		<body>
-				Your input was freeway %s %s, interval %s, and date %s<br/>
-				Stations: %s
-            			<form action ="/">
-              		 	  <input type="submit" name="Home" value="Home"/>
-            			</form>
-          		</body>
-       	 	</html>
-        	'''% (fwayname, fwaydir, interval, date, stations))
+					# get all detector entry entities in each station grouping
+					detector_key = ndb.Key(Detector, detector.detectorid)
+					det_entries_q = DetectorEntry.query(DetectorEntry.detectorid == detector.detectorid,
+														DetectorEntry.date == datetime.datetime.strptime(date, "%m/%d/%Y"))
+					det_entries = det_entries_q.fetch()
+					for det_entry in det_entries:
+						speed_sums.append(det_entry.fivemin_speed)
+				
+				for time_interval in speed_sums:
+					
+					# sum detector entries for this interval
+					speed = sum([int(speed_sum.sum) for speed_sum in time_interval])
+					count = sum([int(speed_sum.count) for speed_sum in time_interval])
+					average_speed = 0
+					if (count != 0) and (speed != 0):
+						average_speed = speed / count
+					results.append("Station:%s date:%s time:%s average speed:%f" % (station.stationid, det_entry.date, speed_sum.time, average_speed))
+		else:
+			logging.info("No results for Highway query:%s", highway_q)
+		
+		self.render_template("query.html", {'freeway': fwayname,
+											'direction': fwaydir,
+											'interval': interval,
+											'date': date,
+											'results':results,})
 
 
 class Q2Handler(BaseHandler):

@@ -65,7 +65,7 @@ class DetectorEntry(ndb.Model):
 	Entities can optionally have any supported interval of SpeedSum properties.
 	"""
 	date = ndb.DateProperty(indexed=True)
-	detector = ndb.KeyProperty(indexed=True)
+	detectorid = ndb.IntegerProperty(indexed=True)
 	daily_speed = ndb.StructuredProperty(SpeedSum)
 	hourly_speed = ndb.StructuredProperty(SpeedSum, repeated=True)
 	fifteenmin_speed = ndb.StructuredProperty(SpeedSum, repeated=True)

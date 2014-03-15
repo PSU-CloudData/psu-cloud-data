@@ -283,6 +283,8 @@ class StoreOutput(base_handler.PipelineBase):
 		}
 		form_data = urllib.urlencode(form_fields)
 		# TODO: need to get the authentication cookie from headers, and send it so that we don't 403
+		#
+		# Cookie: dev_appserver_login="test@example.com:True:185804764220139124118"
 		result = urlfetch.fetch(url=url,
 								payload=form_data,
 								method=urlfetch.POST,
@@ -374,25 +376,17 @@ def split_aggregate_output(s):
 	"""
 	# the key and value from MR job 1 is separated by the ":" character
 	# split there, and keep track of each half
-	key_value = s.split(":")
-	key = key_value[0]
-	value = key_value[1]
+	(key, value) = s.split(":")
 	# the detector and date/time stamp are delimited by "_"
-	keys = key.split("_")
-	det = keys[0]
-	datestamp = keys[1]
+	(det, datestamp) = key.split("_")
 	timestamp = None
 	# speed sum and count values are split with a "," character
-	speed_sum_count = value.split(",")
-	speed_sum = speed_sum_count[0]
-	speed_count = speed_sum_count[1]
+	(speed_sum, speed_count) = value.split(",")
 	# if this datestamp includes the time as well, it needs to be extracted
 	# split on the "T" character (as used in ISO 8601 datetimes)
 	if re.search("T", datestamp):
 		# the datestamp includes a time interval - extract it
-		date_time = datestamp.split("T")
-		datestamp = date_time[0]
-		timestamp = date_time[1]
+		(datestamp, timestamp) = datestamp.split("T")
 
 	# create a detectory entry dictionary, and return
 	entry = {'detector': det, 'datestamp':datestamp, 'timestamp':timestamp, 'sum': speed_sum, 'count': speed_count}
@@ -435,13 +429,13 @@ def import_aggregate_data(entity):
 			if interval == 'hourly_speed':
 				timestamp = datetime.datetime.strptime(detectorentry_dict['timestamp'], "%H").time()
 			else:
-				timestamp = datetime.datetime.strptime(detectorentry_dict['timestamp'], "%H:%M").time()
+				timestamp = datetime.datetime.strptime(detectorentry_dict['timestamp'], "%H.%M").time()
 		else:
 			# there is no timestamp - likely a daily sum
 			timestamp = datetime.time(0,0)
 
 		entry = DetectorEntry.query(DetectorEntry.date == datetime.datetime.strptime(detectorentry_dict['datestamp'], "%Y-%m-%d").date(),
-									DetectorEntry.detector == ndb.Key(Detector, detectorentry_dict['detector'])).get()
+									DetectorEntry.detectorid == int(detectorentry_dict['detector'])).get()
 		speed_sum = None
 		if entry != None:
 			# an entry for this detectory entry exists - fill in SpeedSum values
@@ -466,7 +460,7 @@ def import_aggregate_data(entity):
 		else:
 			# a DetectorEntry does not exist for this detector/date combo - create one...
 			entry = DetectorEntry(date = datetime.datetime.strptime(detectorentry_dict['datestamp'], "%Y-%m-%d").date(),
-									detector = ndb.Key(Detector, detectorentry_dict['detector']))
+									detectorid = int(detectorentry_dict['detector']))
 			speed_sum = SpeedSum(time = timestamp,
 									sum = int(detectorentry_dict['sum']),
 									count = int(detectorentry_dict['count']))
