@@ -356,30 +356,46 @@ class Q3Handler(BaseHandler):
 		fway = i.next()
 		dir = i.next()
 		start = self.request.get('q3sdate')
-		hold2 = start.split()
-		i2=iter(hold)
-		sday = i2.next()
-		sdate = i2.next()
 		end = self.request.get('q3edate')
-		hold3 =end.split()
-		i3=iter(hold)
-		eday = i3.next()
-		edate = i3.next()
+
 
 # get Highwayid of highway= highwayname and direction = dir, create a list of them (bad approach but it works)
 
-		stationget = Highway.query(ndb.AND(Highway.highwayname == fway, Highway.shortdirection == dir))
-		hwyid = stationget.fetch(projection=[Highway.highwayid])
-		highwaylist = list()
-		for highway in hwyid:
-		  highwaylist.append(highway.highwayid)
-
-# Get the stations in the highway returned above		
-
-		stations = Station.query(Station.highwayid.IN(highwaylist)).fetch()
- 		for station.detecors in stations:
-                  det = Detector.query(Detector.detectorid == station.detectors.detectorid).fetch()
+		highway = Highway.query(ndb.AND(Highway.highwayname == fway, Highway.shortdirection == dir)).get()	
+		stations = Station.query(Station.highwayid == highway.highwayid).fetch()
 		
+		for station in stations:
+			if station.stationclass == 1:
+				# don't count the freeway onramp loop data
+				speed_sums = []
+				for detector in station.detectors:
+					# get all detector entry entities in each station grouping
+					detector_key = ndb.Key(Detector, detector.detectorid)
+					det_entries_q = DetectorEntry.query(DetectorEntry.detectorid == detector.detectorid,
+										DetectorEntry.date >= datetime.datetime.strptime(start, "%m/%d/%Y"),
+										DetectorEntry.date <= datetime.datetime.strptime(end, "%m/%d/%Y"))
+					
+					det_twth = det_entries_q.filter(ndb.OR(date(DetectorEntry.date).weekday() == 2, 
+										date(DetectorEntry.date).weekday() == 3, 
+										date(DetectorEntry.date).weekday() == 4))
+					
+					det_times = det_twth.filter(ndb.OR(ndb.AND(DetectorEntry.fivemin_speed.time >= datetime.datetime.strptime("07:00:00 AM", "%I:%M:%S %p"), 
+											DetectorEntry.fivemin_speed.time <= datetime.datetime.strptime("09:00:00 AM", "%I:%M:%S %p")),			
+											DetectorEntry.fivemin_speed.time >= datetime.datetime.strptime("04:00:00 PM", "%I:%M:%S %p"),
+											DetectorEntry.fivemin_speed.time <= datetime.datetime.strptime("06:00:00 PM", "%I:%M:%S %p")))
+					det_entries = det_times.fetch()
+					for det_entry in det_entries:
+						speed_sums.append(det_entry.fivemin_speed)
+				
+				for time_interval in speed_sums:
+					
+					# sum detector entries for this interval
+					speed = sum([int(speed_sum.sum) for speed_sum in time_interval])
+					count = sum([int(speed_sum.count) for speed_sum in time_interval])
+					average_speed = 0
+					if (count != 0) and (speed != 0):
+						average_speed = speed / count
+					results.append("Station:%s date:%s time:%s average speed:%f" % (station.stationid, det_entry.date, speed_sum.time, average_speed))					
 
 
 		self.response.out.write('''
