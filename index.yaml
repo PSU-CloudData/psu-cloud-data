@@ -12,6 +12,12 @@ indexes:
 
 - kind: DetectorEntry
   properties:
+  - name: date
+  - name: detectorid
+  - name: fivemin_speed.time
+
+- kind: DetectorEntry
+  properties:
   - name: detectorid
   - name: date
 

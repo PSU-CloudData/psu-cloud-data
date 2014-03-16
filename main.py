@@ -381,16 +381,15 @@ class Q3Handler(BaseHandler):
 					speed_sums = []
 					for detector in station.detectors:
 						# get all detector entry entities in each station grouping
-						detector_key = ndb.Key(Detector, detector.detectorid)
 						det_entries_q = DetectorEntry.query(DetectorEntry.detectorid == detector.detectorid,
-											DetectorEntry.date >= datetime.datetime.strptime(start, "%m/%d/%Y"),
+											DetectorEntry.date == datetime.datetime.strptime(start, "%m/%d/%Y"),
 											DetectorEntry.date <= datetime.datetime.strptime(end, "%m/%d/%Y"))
 						
 						
-						det_times = det_entries_q.filter(ndb.OR(ndb.AND(DetectorEntry.fivemin_speed.time >= seven_am, 
-												DetectorEntry.fivemin_speed.time <= nine_am),			
-												ndb.AND(DetectorEntry.fivemin_speed.time >= four_pm,
-												DetectorEntry.fivemin_speed.time <= six_pm)))
+						det_times = det_entries_q.filter(ndb.OR(ndb.AND(DetectorEntry.fivemin_speed.time >= seven_am.time(),
+												DetectorEntry.fivemin_speed.time <= nine_am.time()),
+												ndb.AND(DetectorEntry.fivemin_speed.time >= four_pm.time(),
+												DetectorEntry.fivemin_speed.time <= six_pm.time())))
 
 						det_entries = det_times.fetch()
 						for det_entry in det_entries:
