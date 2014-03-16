@@ -386,7 +386,7 @@ class Q3Handler(BaseHandler):
 												DetectorEntry.fivemin_speed.time <= datetime.datetime.strptime("06:00:00 PM", "%I:%M:%S %p")))
 						det_entries = det_times.fetch()
 						for det_entry in det_entries:
-							if (date(det_entry.date).weekday() == 2) or (date(det_entry.date).weekday() == 3) or (date(det_entry.date).weekday() == 4)
+							if (date(det_entry.date).weekday() == 2) or (date(det_entry.date).weekday() == 3) or (date(det_entry.date).weekday() == 4):
 								speed_sums.append(det_entry.fivemin_speed)
 					
 					for time_interval in speed_sums:
