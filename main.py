@@ -379,17 +379,15 @@ class Q3Handler(BaseHandler):
 											DetectorEntry.date >= datetime.datetime.strptime(start, "%m/%d/%Y"),
 											DetectorEntry.date <= datetime.datetime.strptime(end, "%m/%d/%Y"))
 						
-						det_twth = det_entries_q.filter(ndb.OR(date(DetectorEntry.date).weekday() == 2, 
-											date(DetectorEntry.date).weekday() == 3, 
-											date(DetectorEntry.date).weekday() == 4))
 						
-						det_times = det_twth.filter(ndb.OR(ndb.AND(DetectorEntry.fivemin_speed.time >= datetime.datetime.strptime("07:00:00 AM", "%I:%M:%S %p"), 
+						det_times = det_entries_q.filter(ndb.OR(ndb.AND(DetectorEntry.fivemin_speed.time >= datetime.datetime.strptime("07:00:00 AM", "%I:%M:%S %p"), 
 												DetectorEntry.fivemin_speed.time <= datetime.datetime.strptime("09:00:00 AM", "%I:%M:%S %p")),			
 												DetectorEntry.fivemin_speed.time >= datetime.datetime.strptime("04:00:00 PM", "%I:%M:%S %p"),
 												DetectorEntry.fivemin_speed.time <= datetime.datetime.strptime("06:00:00 PM", "%I:%M:%S %p")))
 						det_entries = det_times.fetch()
 						for det_entry in det_entries:
-							speed_sums.append(det_entry.fivemin_speed)
+							if (date(det_entry.date).weekday() == 2) or (date(det_entry.date).weekday() == 3) or (date(det_entry.date).weekday() == 4)
+								speed_sums.append(det_entry.fivemin_speed)
 					
 					for time_interval in speed_sums:
 						
