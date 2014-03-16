@@ -305,7 +305,7 @@ class IndexHandler(webapp2.RequestHandler):
 			pipeline = FiveMinSpeedSumPipeline(filekey, blob_key)
 			pipeline.start()
 			self.redirect(pipeline.base_path + "/status?root=" + pipeline.pipeline_id)
-		elif self.request.get("daily_speed_mapper"):
+		elif self.request.get("speed_mapper"):
 			# Import aggregated data from Blobstore to Datastore using Mapper job
 			url = "http://" + os.environ['HTTP_HOST'] +"/mapreduce/command/start_job"
 			form_fields = {
@@ -316,13 +316,18 @@ class IndexHandler(webapp2.RequestHandler):
 				"mapper_params.blob_keys": re.sub('/blobstore/', '', str(blob_key)),
 				"mapper_params.processing_rate": 100,
 				"mapper_params.shard_count": 16
-				}
-				form_data = urllib.urlencode(form_fields)
-				result = urlfetch.fetch(url=url,
-										payload=form_data,
-										method=urlfetch.POST,
-										headers={'Content-Type': 'application/x-www-form-urlencoded',
-										'X-Requested-With': 'XMLHttpRequest'})
+			}
+			form_data = urllib.urlencode(form_fields)
+			logging.info(form_data)
+			result = urlfetch.fetch(url=url,
+									payload=form_data,
+									method=urlfetch.POST,
+									headers={'Content-Type': 'application/x-www-form-urlencoded',
+									'X-Requested-With': 'XMLHttpRequest'})
+									
+			logging.info(result.headers)
+			self.redirect("/mapreduce/status")
+
 		else:
 			logging.info("Unrecognized operation.")
 

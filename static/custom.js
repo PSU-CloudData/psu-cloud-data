@@ -27,16 +27,16 @@
  */
 function updateImportForm(filekey, blobkey, filename) {
   $('#import_fileName').text(filename);
-  $('#filekey').val(filekey);
-  $('#blobkey').val(blobkey);
+  $('#import_filekey').val(filekey);
+  $('#import_blobkey').val(blobkey);
 
   $('#import').removeAttr('disabled');
 }
 
 function updateMapReduceForm(filekey, blobkey, filename) {
   $('#mr_fileName').text(filename);
-  $('#filekey').val(filekey);
-  $('#blobkey').val(blobkey);
+  $('#mr_filekey').val(filekey);
+  $('#mr_blobkey').val(blobkey);
 
   $('#daily_speed_sum').removeAttr('disabled');
   $('#hourly_speed_sum').removeAttr('disabled');
@@ -46,11 +46,6 @@ function updateMapReduceForm(filekey, blobkey, filename) {
 
 function updateMapperForm(filekey, blobkey, filename) {
   $('#map_fileName').text(filename);
-  $('#filekey').val(filekey);
-  $('#blobkey').val(blobkey);
-  
-  $('#daily_speed_mapper').removeAttr('hidden');
-  $('#hourly_speed_mapper').removeAttr('hidden');
-  $('#fifteen_min_speed_mapper').removeAttr('hidden');
-  $('#five_min_speed_mapper').removeAttr('hidden');
+  $('#map_filekey').val(filekey);
+  $('#map_blobkey').val(blobkey);
 }

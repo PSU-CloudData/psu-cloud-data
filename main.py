@@ -251,6 +251,7 @@ class Q1Handler(BaseHandler):
 		highway_q = Highway.query(Highway.highwayname == fwayname, Highway.shortdirection == fwaydir)
 		logging.info(highway_q)
 		highway = highway_q.get()
+		results = []
 		
 		if highway:
 			stations = Station.query(Station.highwayid == highway.highwayid).fetch()

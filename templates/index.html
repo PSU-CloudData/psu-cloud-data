@@ -84,8 +84,8 @@
 				</table>
 				<form action="/import" method="post">
 					Input File: <label id="import_fileName">none selected</label>
-					<input type="hidden" name="filekey" id="filekey" value=""/>
-					<input type="hidden" name="blobkey" id="blobkey" value=""/>
+					<input type="hidden" name="filekey" id="import_filekey" value=""/>
+					<input type="hidden" name="blobkey" id="import_blobkey" value=""/>
 					<br/>
 					<input type="submit" id="import" name="import" value="Import" disabled="true"/>
 				</form>
@@ -192,7 +192,7 @@
 						<th>size</th>
 					</tr>
 					{% for file in files %}
-						{% if file.filename == "freeway_loopdata_short.csv.zip" %}
+					{% if (file.filename == "freeway_loopdata_short.csv.zip") or (file.filename == "freeway_loopdata.csv.zip") or (file.filename == "freeway_loopdata_short_16.zip") or (file.filename == "freeway_loopdata_16.zip") %}
 						<tr>
 							<td><input type="radio" name="file_radio" onclick="updateMapReduceForm('{{ file.blobkey }}','{{ file.blobkey }}','{{ file.filename }}');"></td>
 							<td><a href="/file/{{ file.blobkey }}">{{ file.filename }}</a></td>
@@ -208,8 +208,8 @@
 				<br/>
 				<form action="/map_reduce" method="post">
 					<strong>Input File:</strong> <label id="mr_fileName">none selected</label>
-					<input type="hidden" name="filekey" id="filekey" value=""/>
-					<input type="hidden" name="blobkey" id="blobkey" value=""/>
+					<input type="hidden" name="filekey" id="mr_filekey" value=""/>
+					<input type="hidden" name="blobkey" id="mr_blobkey" value=""/>
 					<br /><br/>
 					<table>
 						<tr>
@@ -223,7 +223,8 @@
 
 				{% else %}
 				<strong>No freeway_loopdata files uploaded yet!</strong>
-				{% endif %}			</div>
+				{% endif %}
+			</div>
 		</div>
 		<div class="header">
 			<!-- Mapper interface -->
@@ -232,47 +233,56 @@
 		<div class="section">
 			<div class="interior">
 				<p>Select an input file from the previous section and run a Mapper job on it.</p>
-				<p>If the button for the Mapper job that you want to run is not enabled, it you may need to run MapReduce for that interval.</p>
+				<p>If the button for the Mapper job that you want to run is not enabled, you may need to run MapReduce for that interval.</p>
 				<br />
 				{% if file_count %}
-				<table border=1>
-					<tr>
-						<th></th>
-						<th>name</th>
-						<th>uploaded on</th>
-						<th>content type</th>
-						<th>md5</th>
-						<th>blobkey</th>
-						<th>size</th>
-					</tr>
-					{% for file in files %}
-						{% if file.filename == "freeway_loopdata_short.csv.zip" %}
+				<form action="/map_reduce" method="post">
+					<strong>Input File:</strong> <label id="map_fileName">none selected</label>
+					<table border=1>
 						<tr>
-							<td><input type="radio" name="file_radio" onclick="updateMapperForm('{{ file.blobkey }}','{{ file.blobkey }}','{{ file.filename }}');"></td>
+							<th>name</th>
+							<th>daily_speed_sum</th>
+							<th>hourly_speed_sum</th>
+							<th>five_min_speed_sum</th>
+							<th>fifteen_min_speed_sum</th>
+						</tr>
+						{% for file in files %}
+						{% if (file.filename == "freeway_loopdata_short.csv.zip") or (file.filename == "freeway_loopdata.csv.zip") or (file.filename == "freeway_loopdata_short_16.zip") or (file.filename == "freeway_loopdata_16.zip") %}
+						<tr>
 							<td><a href="/file/{{ file.blobkey }}">{{ file.filename }}</a></td>
-							<td>{{ file.creation }}</td>
-							<td>{{ file.content_type }}</td>
-							<td>{{ file.md5_hash }}</td>
-							<td>{{ file.blobkey }}</td>
-							<td>{{ file.size }}</td>
+							<td>
+							{% if file.daily_speed_sum %}
+								<input type="submit" id="daily_speed_mapper" name="speed_mapper" value="DailySpeedMapper" >
+								<input type="hidden" name="filekey" id="map_filekey" value="{{ file.daily_speed_sum }}"/>
+								<input type="hidden" name="blobkey" id="map_blobkey" value="{{ file.daily_speed_sum }}"/>
+							{% endif %}
+							</td>
+							<td>
+							{% if file.hourly_speed_sum %}
+								<input type="submit" id="hourly_speed_mapper" name="speed_mapper" value="HourlySpeedMapper">
+								<input type="hidden" name="filekey" id="map_filekey" value="{{ file.hourly_speed_sum }}"/>
+								<input type="hidden" name="blobkey" id="map_blobkey" value="{{ file.hourly_speed_sum }}"/>
+							{% endif %}
+							</td>
+							<td>
+							{% if file.fifteen_min_speed_sum %}
+								<input type="submit" id="fifteen_min_speed_mapper" name="speed_mapper" value="FifteenMinSpeedMapper">
+								<input type="hidden" name="filekey" id="map_filekey" value="{{ file.fifteen_min_speed_sum }}"/>
+								<input type="hidden" name="blobkey" id="map_blobkey" value="{{ file.fifteen_min_speed_sum }}"/>
+							{% endif %}
+							</td>
+							<td>
+							{% if file.five_min_speed_sum %}
+								<input type="submit" id="five_min_speed_mapper" name="speed_mapper" value="FiveMinSpeedMapper">
+								<input type="hidden" name="filekey" id="map_filekey" value="{{ file.five_min_speed_sum }}"/>
+								<input type="hidden" name="blobkey" id="map_blobkey" value="{{ file.five_min_speed_sum }}"/>
+							{% endif %}
+							</td>
 						</tr>
 						{% endif %}
-					{% endfor %}
-					<form action="/map_reduce" method="post">
-						<strong>Input File:</strong> <label id="map_fileName">none selected</label>
-						<input type="hidden" name="filekey" id="filekey" value=""/>
-						<input type="hidden" name="blobkey" id="blobkey" value=""/>
-						<br /><br/>
-						<table>
-							<tr>
-								<td><input type="submit" id="daily_speed_mapper" name="daily_speed_mapper" value="DailySpeedMapper" hidden="true"></td>
-								<td><input type="submit" id="hourly_speed_mapper" name="hourly_speed_mapper" value="HourlySpeedMapper" hidden="true"></td>
-								<td><input type="submit" id="five_min_speed_mapper" name="fivemin_speed_mapper" value="FifteenMinSpeedMapper" hidden="true"></td>
-								<td><input type="submit" id="fifteen_min_speed_mapper" name="fifteen_min_speed_mapper" value="FiveMinSpeedMapper" hidden="true"></td>
-							</tr>
-						</table>
-					</form>
+						{% endfor %}
 				</table>
+				</form>
 				{% else %}
 				<strong>No freeway_loopdata files uploaded yet!</strong>
 				{% endif %}
