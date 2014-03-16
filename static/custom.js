@@ -43,9 +43,3 @@ function updateMapReduceForm(filekey, blobkey, filename) {
   $('#fifteen_min_speed_sum').removeAttr('disabled');
   $('#five_min_speed_sum').removeAttr('disabled');
 }
-
-function updateMapperForm(filekey, blobkey, filename) {
-  $('#map_fileName').text(filename);
-  $('#map_filekey').val(filekey);
-  $('#map_blobkey').val(blobkey);
-}

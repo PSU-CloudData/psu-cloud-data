@@ -306,6 +306,16 @@ class IndexHandler(webapp2.RequestHandler):
 			pipeline.start()
 			self.redirect(pipeline.base_path + "/status?root=" + pipeline.pipeline_id)
 		elif self.request.get("speed_mapper"):
+			mapper = self.request.get("speed_mapper")
+			if mapper == "DailySpeedMapper":
+				blob_key = self.request.get("daily_blobkey")
+			elif mapper == "HourlySpeedMapper":
+				blob_key = self.request.get("hourly_blobkey")
+			elif mapper == "FifteenMinSpeedMapper":
+				blob_key = self.request.get("fifteen_min_blobkey")
+			elif mapper == "FiveMinSpeedMapper":
+				blob_key = self.request.get("five_min_blobkey")
+			logging.info("Importing blob:%s",str(blob_key))
 			# Import aggregated data from Blobstore to Datastore using Mapper job
 			url = "http://" + os.environ['HTTP_HOST'] +"/mapreduce/command/start_job"
 			form_fields = {
@@ -324,7 +334,6 @@ class IndexHandler(webapp2.RequestHandler):
 									method=urlfetch.POST,
 									headers={'Content-Type': 'application/x-www-form-urlencoded',
 									'X-Requested-With': 'XMLHttpRequest'})
-									
 			logging.info(result.headers)
 			self.redirect("/mapreduce/status")
 

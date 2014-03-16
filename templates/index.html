@@ -232,7 +232,7 @@
 		</div>
 		<div class="section">
 			<div class="interior">
-				<p>Select an input file from the previous section and run a Mapper job on it.</p>
+				<p>Run a Mapper job on results from a MapReduce job.</p>
 				<p>If the button for the Mapper job that you want to run is not enabled, you may need to run MapReduce for that interval.</p>
 				<br />
 				{% if file_count %}
@@ -253,29 +253,25 @@
 							<td>
 							{% if file.daily_speed_sum %}
 								<input type="submit" id="daily_speed_mapper" name="speed_mapper" value="DailySpeedMapper" >
-								<input type="hidden" name="filekey" id="map_filekey" value="{{ file.daily_speed_sum }}"/>
-								<input type="hidden" name="blobkey" id="map_blobkey" value="{{ file.daily_speed_sum }}"/>
+								<input type="hidden" name="daily_blobkey" id="map_blobkey" value="{{ file.daily_speed_sum }}"/>
 							{% endif %}
 							</td>
 							<td>
 							{% if file.hourly_speed_sum %}
 								<input type="submit" id="hourly_speed_mapper" name="speed_mapper" value="HourlySpeedMapper">
-								<input type="hidden" name="filekey" id="map_filekey" value="{{ file.hourly_speed_sum }}"/>
-								<input type="hidden" name="blobkey" id="map_blobkey" value="{{ file.hourly_speed_sum }}"/>
+								<input type="hidden" name="hourly_blobkey" id="map_blobkey" value="{{ file.hourly_speed_sum }}"/>
 							{% endif %}
 							</td>
 							<td>
 							{% if file.fifteen_min_speed_sum %}
 								<input type="submit" id="fifteen_min_speed_mapper" name="speed_mapper" value="FifteenMinSpeedMapper">
-								<input type="hidden" name="filekey" id="map_filekey" value="{{ file.fifteen_min_speed_sum }}"/>
-								<input type="hidden" name="blobkey" id="map_blobkey" value="{{ file.fifteen_min_speed_sum }}"/>
+								<input type="hidden" name="fifteen_min_blobkey" id="map_blobkey" value="{{ file.fifteen_min_speed_sum }}"/>
 							{% endif %}
 							</td>
 							<td>
 							{% if file.five_min_speed_sum %}
 								<input type="submit" id="five_min_speed_mapper" name="speed_mapper" value="FiveMinSpeedMapper">
-								<input type="hidden" name="filekey" id="map_filekey" value="{{ file.five_min_speed_sum }}"/>
-								<input type="hidden" name="blobkey" id="map_blobkey" value="{{ file.five_min_speed_sum }}"/>
+								<input type="hidden" name="five_min_blobkey" id="map_blobkey" value="{{ file.five_min_speed_sum }}"/>
 							{% endif %}
 							</td>
 						</tr>

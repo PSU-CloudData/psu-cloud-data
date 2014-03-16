@@ -4,13 +4,18 @@
 		<link href="/static/style.css" rel="stylesheet" type="text/css">
 	</head>
 	<body>
-		<div>
-			<p>Your input was freeway {{ freeway }} {{ direction }}, interval {{ interval }}, and date {{ date }}</p><br/>
-			{% if results %}
-				{% for result in results %}
-					<p>{{ result }}</p><br/>
-				{% endfor %}
-			{% endif %}
+		<div class="header">
+			<p>Your input was freeway {{ freeway }} {{ direction }}, interval {{ interval }}, and date {{ date }}</p>
+		</div>
+		<div class="section">
+			<div class="interior">
+				
+				{% if results %}
+					{% for result in results %}
+						<p>{{ result }}</p><br/>
+					{% endfor %}
+				{% endif %}
+			</div>
 		</div>
 	</body>
 </html>

@@ -256,10 +256,14 @@ class Q1Handler(BaseHandler):
 		if highway:
 			stations = Station.query(Station.highwayid == highway.highwayid).fetch()
 			
+			#station_entries = {'station', entries[]}
+			station_entries = {}
 			for station in stations:
+			# get all detector entries for the detectors in station
 				if station.stationclass == 1:
 					# don't count the freeway onramp loop data
-					speed_sums = []
+					detector_entries = []
+					# union all detector_entries for this station
 					for detector in station.detectors:
 						# get all detector entry entities in each station grouping
 						detector_key = ndb.Key(Detector, detector.detectorid)
@@ -267,18 +271,25 @@ class Q1Handler(BaseHandler):
 															DetectorEntry.date == datetime.datetime.strptime(date, "%m/%d/%Y"))
 						det_entries = det_entries_q.fetch()
 						for det_entry in det_entries:
-							speed_sums.append(det_entry.fivemin_speed)
+							detector_entries.append(det_entry.fivemin_speed)
 					
-					for time_interval in speed_sums:
-						
-						# sum detector entries for this interval
-						speed = sum([int(speed_sum.sum) for speed_sum in time_interval])
-						count = sum([int(speed_sum.count) for speed_sum in time_interval])
-						average_speed = 0
-						if (count != 0) and (speed != 0):
-							average_speed = speed / count
-						results.append("Station:%s date:%s time:%s average speed:%f" % (station.stationid, det_entry.date, speed_sum.time, average_speed))
-			
+					for time_interval in detector_entries:
+						station_entry = {'station', station.stationid,
+										'time', time_interval[0].time,
+										'sum', sum([int(detector_entry.sum) for detector_entry in time_interval]),
+										'count', sum([int(detector_entry.count) for detector_entry in time_interval])}
+						station_entries[station.stationid].append(station_entry)
+
+			logging.info(station_entries)
+			for station_entry in station_entries.keys():
+				# group detector entries by date
+				logging.info(station_entry)
+#				average_speed = 0
+#				if (count != 0) and (speed != 0):
+#					average_speed = speed / count
+#				if len(time_interval) > 0:
+#					results.append("Station:%s date:%s time:%s average speed:%f" % (station_entry.key, station_entry.time, time_interval[0].time, average_speed))
+
 			self.render_template("query.html", {'freeway': fwayname,
 												'direction': fwaydir,
 												'interval': interval,
