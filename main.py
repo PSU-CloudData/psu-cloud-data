@@ -248,38 +248,41 @@ class Q1Handler(BaseHandler):
 		interval = self.request.get('q1interval')
 		date = self.request.get('q1date')
 		
-		highway = Highway.query(Highway.highwayname == fwayname, Highway.shortdirection == fwaydir).get()
+		highway_q = Highway.query(Highway.highwayname == fwayname, Highway.shortdirection == fwaydir)
+		logging.info(highway_q)
+		highway = highway_q.get()
 		
-		stations = Station.query(Station.highwayid == highway.highwayid).fetch()
-		
-		for station in stations:
-			if station.stationclass == 1:
-				# don't count the freeway onramp loop data
-				speed_sums = []
-				for detector in station.detectors:
-					# get all detector entry entities in each station grouping
-					detector_key = ndb.Key(Detector, detector.detectorid)
-					det_entries_q = DetectorEntry.query(DetectorEntry.detectorid == detector.detectorid,
-														DetectorEntry.date == datetime.datetime.strptime(date, "%m/%d/%Y"))
-					det_entries = det_entries_q.fetch()
-					for det_entry in det_entries:
-						speed_sums.append(det_entry.fivemin_speed)
-				
-				for time_interval in speed_sums:
+		if highway:
+			stations = Station.query(Station.highwayid == highway.highwayid).fetch()
+			
+			for station in stations:
+				if station.stationclass == 1:
+					# don't count the freeway onramp loop data
+					speed_sums = []
+					for detector in station.detectors:
+						# get all detector entry entities in each station grouping
+						detector_key = ndb.Key(Detector, detector.detectorid)
+						det_entries_q = DetectorEntry.query(DetectorEntry.detectorid == detector.detectorid,
+															DetectorEntry.date == datetime.datetime.strptime(date, "%m/%d/%Y"))
+						det_entries = det_entries_q.fetch()
+						for det_entry in det_entries:
+							speed_sums.append(det_entry.fivemin_speed)
 					
-					# sum detector entries for this interval
-					speed = sum([int(speed_sum.sum) for speed_sum in time_interval])
-					count = sum([int(speed_sum.count) for speed_sum in time_interval])
-					average_speed = 0
-					if (count != 0) and (speed != 0):
-						average_speed = speed / count
-					results.append("Station:%s date:%s time:%s average speed:%f" % (station.stationid, det_entry.date, speed_sum.time, average_speed))
-		
-		self.render_template("query.html", {'freeway': fwayname,
-											'direction': fwaydir,
-											'interval': interval,
-											'date': date,
-											'results':results,})
+					for time_interval in speed_sums:
+						
+						# sum detector entries for this interval
+						speed = sum([int(speed_sum.sum) for speed_sum in time_interval])
+						count = sum([int(speed_sum.count) for speed_sum in time_interval])
+						average_speed = 0
+						if (count != 0) and (speed != 0):
+							average_speed = speed / count
+						results.append("Station:%s date:%s time:%s average speed:%f" % (station.stationid, det_entry.date, speed_sum.time, average_speed))
+			
+			self.render_template("query.html", {'freeway': fwayname,
+												'direction': fwaydir,
+												'interval': interval,
+												'date': date,
+												'results':results,})
 
 #    Hourly Corridor Travel Times: Find travel time for the entire I-205 NB freeway section in the data set 
 #    (Sunnyside Rd to the river - all NB stations in the data set) for each hour in the 2-month test period
