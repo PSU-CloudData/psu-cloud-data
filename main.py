@@ -282,7 +282,7 @@ class Q1Handler(BaseHandler):
 												'direction': fwaydir,
 												'interval': interval,
 												'date': date,
-												'results':results,})
+												'results': results,})
 
 #    Hourly Corridor Travel Times: Find travel time for the entire I-205 NB freeway section in the data set 
 #    (Sunnyside Rd to the river - all NB stations in the data set) for each hour in the 2-month test period
@@ -306,34 +306,36 @@ class Q2Handler(BaseHandler):
 		dir = i.next()
 		start = self.request.get('q2sdate')
 		end = self.request.get('q2edate')
+		counter = 0
+		speed_sums = []
+		lengths = []
 
-# get Highwayid of highway= highwayname and direction = dir, create a list of them (bad approach but it works)
+# get Highwayid of highway= highwayname and direction = dir, create a list of them 
 
-		stationget = Highway.query(ndb.AND(Highway.highwayname == fway, Highway.shortdirection == dir))
-		hwyid = stationget.fetch(projection=[Highway.highwayid])
-		stationlist = list()
-		for highway in hwyid:
-		  stationlist.append(highway.highwayid)
+		highway = Highway.query(ndb.AND(Highway.highwayname == fway, Highway.shortdirection == dir)).get()	
+		if highway:
+			stations = Station.query(Station.highwayid == highway.highwayid).fetch()
+			
+			for station in stations:
+				lengths.append(station.length_mid)
+				speed_sums.append([])
 
-# Get the stations in the highway returned above		
+			for station in stations:
+				if station.stationclass == 1:
+					counter = 0
+					# don't count the freeway onramp loop data
+					for detector in station.detectors:
+						# get all detector entry entities in each station grouping
+						detector_key = ndb.Key(Detector, detector.detectorid)
+						det_entries_q = DetectorEntry.query(DetectorEntry.detectorid == detector.detectorid,
+											DetectorEntry.date >= datetime.datetime.strptime(start, "%m/%d/%Y"),
+											DetectorEntry.date <= datetime.datetime.strptime(end, "%m/%d/%Y"))
 
-		stations = Station.query(Station.highwayid.IN(stationlist))
-                stat = stations.fetch(projection=[Station.detectors.detectorid])
-
-
-
-
-		self.response.out.write('''
-        	<html>
-          		<body>
-            			<form action ="/">
-              		 	  <input type="submit" name="Home" value="Home"/>
-            			</form>
-          		</body>
-       	 	</html>
-        	''')
-
-
+						det_entries = det_entries_q.fetch()
+						for det_entry in det_entries:
+							speed_sums[counter].append(det_entry.hourly_speed.sum)
+					
+						counter += 1
 
 #    Mid-Weekday Peak Period Travel Times: Find the average travel time for 7-9AM and 4-6PM on Tuesdays, Wednesdays and 
 #    Thursdays for the I-205 NB freeway during the 2-month test period
@@ -360,9 +362,13 @@ class Q3Handler(BaseHandler):
 		dir = i.next()
 		start = self.request.get('q3sdate')
 		end = self.request.get('q3edate')
+		seven_am = datetime.datetime.strptime("07:00:00 AM", "%I:%M:%S %p")
+		nine_am = datetime.datetime.strptime("09:00:00 AM", "%I:%M:%S %p")
+		four_pm = datetime.datetime.strptime("04:00:00 PM", "%I:%M:%S %p")
+		six_pm = datetime.datetime.strptime("06:00:00 PM", "%I:%M:%S %p")
 
 
-# get Highwayid of highway= highwayname and direction = dir, create a list of them (bad approach but it works)
+# get Highwayid of highway= highwayname and direction = dir, create a list of them 
 
 		highway = Highway.query(ndb.AND(Highway.highwayname == fway, Highway.shortdirection == dir)).get()	
 		if highway:
@@ -380,10 +386,11 @@ class Q3Handler(BaseHandler):
 											DetectorEntry.date <= datetime.datetime.strptime(end, "%m/%d/%Y"))
 						
 						
-						det_times = det_entries_q.filter(ndb.OR(ndb.AND(DetectorEntry.fivemin_speed.time >= datetime.datetime.strptime("07:00:00 AM", "%I:%M:%S %p"), 
-												DetectorEntry.fivemin_speed.time <= datetime.datetime.strptime("09:00:00 AM", "%I:%M:%S %p")),			
-												DetectorEntry.fivemin_speed.time >= datetime.datetime.strptime("04:00:00 PM", "%I:%M:%S %p"),
-												DetectorEntry.fivemin_speed.time <= datetime.datetime.strptime("06:00:00 PM", "%I:%M:%S %p")))
+						det_times = det_entries_q.filter(ndb.OR(ndb.AND(DetectorEntry.fivemin_speed.time >= seven_am, 
+												DetectorEntry.fivemin_speed.time <= nine_am),			
+												ndb.AND(DetectorEntry.fivemin_speed.time >= four_pm,
+												DetectorEntry.fivemin_speed.time <= six_pm)))
+
 						det_entries = det_times.fetch()
 						for det_entry in det_entries:
 							if (date(det_entry.date).weekday() == 2) or (date(det_entry.date).weekday() == 3) or (date(det_entry.date).weekday() == 4):
@@ -398,19 +405,6 @@ class Q3Handler(BaseHandler):
 						if (count != 0) and (speed != 0):
 							average_speed = speed / count
 						results.append("Station:%s date:%s time:%s average speed:%f" % (station.stationid, det_entry.date, speed_sum.time, average_speed))					
-
-
-		self.response.out.write('''
-        	<html>
-          		<body>
-				
-            			<form action ="/">
-              		 	  <input type="submit" name="Home" value="Home"/>
-            			</form>
-          		</body>
-       	 	</html>
-        	''')
-
 
 
 
