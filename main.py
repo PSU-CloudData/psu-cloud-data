@@ -233,6 +233,10 @@ class ImportHandler(BaseHandler):
 			logging.info("Import not supported for file: "+blob_info.filename)
 		self.redirect("/")
 
+
+
+#    Single-Day Station Travel Times: Find travel time for each NB station for 5 minute intervals for Sept 22, 2011.
+
 class Q1Handler(BaseHandler):
 	""" Q1Handler class definition
 	
@@ -279,6 +283,8 @@ class Q1Handler(BaseHandler):
 											'date': date,
 											'results':results,})
 
+#    Hourly Corridor Travel Times: Find travel time for the entire I-205 NB freeway section in the data set 
+#    (Sunnyside Rd to the river - all NB stations in the data set) for each hour in the 2-month test period
 
 class Q2Handler(BaseHandler):
 	""" Q2Handler class definition
@@ -326,6 +332,11 @@ class Q2Handler(BaseHandler):
        	 	</html>
         	''')
 
+
+
+#    Mid-Weekday Peak Period Travel Times: Find the average travel time for 7-9AM and 4-6PM on Tuesdays, Wednesdays and 
+#    Thursdays for the I-205 NB freeway during the 2-month test period
+
 class Q3Handler(BaseHandler):
 	""" Q3Handler class definition
 	
@@ -361,16 +372,15 @@ class Q3Handler(BaseHandler):
 
 		stationget = Highway.query(ndb.AND(Highway.highwayname == fway, Highway.shortdirection == dir))
 		hwyid = stationget.fetch(projection=[Highway.highwayid])
-		stationlist = list()
+		highwaylist = list()
 		for highway in hwyid:
-		  stationlist.append(highway.highwayid)
+		  highwaylist.append(highway.highwayid)
 
 # Get the stations in the highway returned above		
 
-		stations = Station.query(Station.highwayid.IN(stationlist))
-                stat = stations.fetch(projection=[Station.detectors.detectorid])
- 		#for station in stat:
-                  
+		stations = Station.query(Station.highwayid.IN(highwaylist)).fetch()
+ 		for station.detecors in stations:
+                  det = Detector.query(Detector.detectorid == station.detectors.detectorid).fetch()
 		
 
 
@@ -384,6 +394,11 @@ class Q3Handler(BaseHandler):
           		</body>
        	 	</html>
         	''')
+
+
+
+
+#    Station-to-Station Travel Times: Find travel time for all station-to-station NB pairs for 8AM on Sept 22, 2011
 
 class Q4Handler(BaseHandler):
 	""" Q4Handler class definition
