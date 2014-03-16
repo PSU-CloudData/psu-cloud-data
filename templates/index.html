@@ -292,19 +292,19 @@
 		<div class="section">
 			<script>
 				$(function() {
-				$( "#q1date" ).datepicker({ minDate: "09/15/2011"});
+				$( "#q1date" ).datepicker({ minDate: "09/22/2011", maxDate: "09/22/2011"});
 				$( "#q2sdate" ).datepicker({ minDate: "09/15/2011"});
 				$( "#q2edate" ).datepicker({ minDate: "09/15/2011"});
-				$( "#q3sdate" ).datepicker({ minDate: "09/15/2011", beforeShowDay: midweek});
-				$( "#q3edate" ).datepicker({ minDate: "09/15/2011", beforeShowDay: midweek});
-				$( "#q4date" ).datepicker({ minDate: "09/15/2011"});
+				$( "#q3sdate" ).datepicker({ minDate: "09/15/2011", maxDate: "11/15/2011", beforeShowDay: midweek});
+				$( "#q3edate" ).datepicker({ minDate: "09/15/2011", maxDate: "11/15/2011", beforeShowDay: midweek});
+				$( "#q4date" ).datepicker({ minDate: "09/22/2011", maxDate: "09/22/2011"});
 
 				$( "#q1date" ).datepicker('setDate', "09/15/2011");
 				$( "#q2sdate" ).datepicker('setDate', "09/15/2011");
-				$( "#q2edate" ).datepicker('setDate', "09/15/2011");
+				$( "#q2edate" ).datepicker('setDate', "11/15/2011");
 			    	$( "#q3sdate" ).datepicker('setDate', "09/15/2011");
-				$( "#q3edate" ).datepicker('setDate', "09/15/2011");
-				$( "#q4date" ).datepicker('setDate', "09/15/2011");
+				$( "#q3edate" ).datepicker('setDate', "11/15/2011");
+				$( "#q4date" ).datepicker('setDate', "09/22/2011");
 
 				});
                              	var mid = ["2","3","4"];
@@ -317,7 +317,8 @@
 			<!-- Query 1 -->
 			<div class="query">
 				<h3>Query #1</h3>
-				<p>Single-Day Station Travel Times</p>				
+				<h4>Single-Day Station Travel Times</h4>
+				<p>Find travel time for each NB station for 5 minute intervals for Sept 22, 2011</p>
 				<form action="/Queryone" method="post">
 					Freeway:     <select name="q1freeway">
 							<optgroup label="I-205">
@@ -352,7 +353,8 @@
 				<!-- Query 2 -->
 			<div class="query">
 				<h3>Query #2</h3>
-				<p>Hourly Corridor Travel Times</p>
+				<h4>Hourly Corridor Travel Times</h4>
+				<p>Find travel time for the entire I-205 NB freeway section in the data set (Sunnyside Rd to the river - all NB stations in the data set) for each hour in the 2-month test period</p>
 				<form action="/Querytwo" method="post">
 					Freeway:     <select name="q2freeway">
 							<optgroup label="I-205">
@@ -382,7 +384,8 @@
 			<!-- Query 3 -->
 			<div class="query">
 				<h3>Query #3</h3>
-				<p>Mid-Weekday Peak Period Travel Times</p>			
+				<h4>Mid-Weekday Peak Period Travel Times</h4>
+				<p>Find the average travel time for 7-9AM and 4-6PM on Tuesdays, Wednesdays and Thursdays for the I-205 NB freeway during the 2-month test period</p>
 				<form action="/Querythree " method="post">
 					Freeway:     <select name="q3freeway">
 							<optgroup label="I-205">
@@ -412,7 +415,8 @@
 			<!-- Query 4 -->
 			<div class="query">
 				<h3>Query #4</h3>
-				<p>Station-to-Station Travel Times</p>				
+				<h4>Station-to-Station Travel Times</h4>
+				</p>Find travel time for all station-to-station NB pairs for 8AM on Sept 22, 2011</p>
 				<form action="/Queryfour" method="post">
 					Freeway:     <select name="q4freeway">
 							<optgroup label="I-205">
