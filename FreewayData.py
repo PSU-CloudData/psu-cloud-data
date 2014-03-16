@@ -70,3 +70,18 @@ class DetectorEntry(ndb.Model):
 	hourly_speed = ndb.StructuredProperty(SpeedSum, repeated=True)
 	fifteenmin_speed = ndb.StructuredProperty(SpeedSum, repeated=True)
 	fivemin_speed = ndb.StructuredProperty(SpeedSum, repeated=True)
+
+class StationEntry(ndb.Model):
+	"""A helper class that represents StationEntry counter values
+	
+	Store processed information from mapreduce jobs into the Datastore as DetectoryEntry entities
+	for easy retrieval. Each entity represents a single day/detector combo, and will contain a single
+	*_speed_sum SpeedSum property (time, count, and sum of speed measurements) for each date that is contained in the dataset.
+	Entities can optionally have any supported interval of SpeedSum properties.
+	"""
+	date = ndb.DateProperty(indexed=True)
+	stationid = ndb.IntegerProperty(indexed=True)
+	daily_speed = ndb.StructuredProperty(SpeedSum, repeated=True)
+	hourly_speed = ndb.StructuredProperty(SpeedSum, repeated=True)
+	fifteenmin_speed = ndb.StructuredProperty(SpeedSum, repeated=True)
+	fivemin_speed = ndb.StructuredProperty(SpeedSum, repeated=True)

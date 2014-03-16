@@ -29,7 +29,7 @@ from google.appengine.runtime import apiproxy_errors
 
 from BaseHandler import BaseHandler
 from FileMetadata import FileMetadata
-from FreewayData import Highway, Station, Detector, SpeedSum, DetectorEntry
+from FreewayData import Highway, Station, Detector, SpeedSum, DetectorEntry, StationEntry
 
 
 def combine_stations():
@@ -61,7 +61,7 @@ def combine_detectors():
 				stn.detectors.append(det)
 				stn.put()
 				logging.info("Put detector:%s in station:%s", det.key, stn.stationid)
-	deleteDetectors()
+	#deleteDetectors()
 
 def deleteDetectors():
 	""" delete all Detector entities from datastore """
@@ -256,39 +256,31 @@ class Q1Handler(BaseHandler):
 		if highway:
 			stations = Station.query(Station.highwayid == highway.highwayid).fetch()
 			
-			#station_entries = {'station', entries[]}
-			station_entries = {}
 			for station in stations:
-			# get all detector entries for the detectors in station
+				# get all station entries for this station
 				if station.stationclass == 1:
 					# don't count the freeway onramp loop data
-					detector_entries = []
-					# union all detector_entries for this station
-					for detector in station.detectors:
-						# get all detector entry entities in each station grouping
-						detector_key = ndb.Key(Detector, detector.detectorid)
-						det_entries_q = DetectorEntry.query(DetectorEntry.detectorid == detector.detectorid,
-															DetectorEntry.date == datetime.datetime.strptime(date, "%m/%d/%Y"))
-						det_entries = det_entries_q.fetch()
-						for det_entry in det_entries:
-							detector_entries.append(det_entry.fivemin_speed)
+					station_entries = StationEntry.query(StationEntry.stationid == station.stationid,
+														StationEntry.date == datetime.datetime.strptime(date, "%m/%d/%Y")).fetch()
+					entries = []
+					s_time = None
+					s_sum = 0
+					s_count = 0
+					for station_entry in station_entries:
+						# aggregate all station entry SumCounts
+						s_sum += sum([int(speed_sum.sum) for speed_sum in station_entry.fivemin_speed])
+						s_count += sum([int(speed_sum.count) for speed_sum in station_entry.fivemin_speed])
+						if len(station_entry.fivemin_speed) > 0:
+							s_time = station_entry.fivemin_speed[0].time
 					
-					for time_interval in detector_entries:
-						station_entry = {'station', station.stationid,
-										'time', time_interval[0].time,
-										'sum', sum([int(detector_entry.sum) for detector_entry in time_interval]),
-										'count', sum([int(detector_entry.count) for detector_entry in time_interval])}
-						station_entries[station.stationid].append(station_entry)
-
-			logging.info(station_entries)
-			for station_entry in station_entries.keys():
-				# group detector entries by date
-				logging.info(station_entry)
-#				average_speed = 0
-#				if (count != 0) and (speed != 0):
-#					average_speed = speed / count
-#				if len(time_interval) > 0:
-#					results.append("Station:%s date:%s time:%s average speed:%f" % (station_entry.key, station_entry.time, time_interval[0].time, average_speed))
+					average_speed = 0
+					if (s_count != 0) and (s_sum != 0):
+						average_speed = s_sum / s_count
+						
+					if not s_time:
+						results.append("Station:%s date:%s average speed:%f" % (station_entry.stationid, station_entry.date, average_speed))
+					else:
+						results.append("Station:%s date:%s time:%s average speed:%f" % (station_entry.stationid, station_entry.date, s_time, average_speed))
 
 			self.render_template("query.html", {'freeway': fwayname,
 												'direction': fwaydir,

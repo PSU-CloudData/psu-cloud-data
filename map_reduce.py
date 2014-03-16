@@ -25,7 +25,7 @@ from mapreduce import shuffler
 from mapreduce import util
 
 from FileMetadata import FileMetadata
-from FreewayData import Detector, DetectorEntry, SpeedSum
+from FreewayData import Station, Detector, DetectorEntry, StationEntry, SpeedSum
 
 #MARK: MapReduce pipelines
 
@@ -367,6 +367,8 @@ class DoneHandler(webapp2.RequestHandler):
 		logging.info("Job \"%s\" with id %s done", job_name, job_id)
 		if job_name == 'Import aggregate data':
 			logging.info("Import of aggregate data completed.")
+		elif job_name == 'Import aggregate data station':
+			logging.info("Import of station aggregate data completed.")
 		else:
 		# unknown job
 			logging.error("Unknown MapReduce job \"%s\"", job_name)
@@ -497,6 +499,110 @@ def import_aggregate_data(entity):
 	else:
 		logging.error("No blob was found for key %s", blob_key)
 
+def import_aggregate_data_station(entity):
+	""" Method defined for "Import aggregate data station" MR job specified in mapreduce.yaml
+		
+		Args:
+		entity: entity to process as string. Should be a text file.
+	"""
+	ctx = context.get()
+	params = ctx.mapreduce_spec.mapper.params
+	blob_key = params['blob_keys']
+	
+	# get the blob_keys that were passed to this function to determine filename
+	blob_reader = blobstore.BlobReader(blob_key, buffer_size=1048576)
+	if blob_reader:
+		# the filename helps us to determine what interval this data is for
+		interval = None
+		if re.search('daily', blob_reader.blob_info.filename):
+			interval = 'daily_speed'
+		elif re.search('hourly', blob_reader.blob_info.filename):
+			interval = 'hourly_speed'
+		elif re.search('fifteen', blob_reader.blob_info.filename):
+			interval = 'fifteenmin_speed'
+		elif re.search('five', blob_reader.blob_info.filename):
+			interval = 'fivemin_speed'
+		
+		# get the entity passed to this mapper function (one line, delimited by \n)
+		(byte_offset, line_value) = entity
+
+		#logging.info("Got line:%s", line)
+		detectorentry_dict = split_aggregate_output(line_value)
+		# the entry has a time stamp - likely hourly, 15 min, or 5 min count
+		timestamp = None
+		if detectorentry_dict['timestamp']:
+			# there is a timestamp - set it for the SpeedSum object
+			if interval == 'hourly_speed':
+				timestamp = datetime.datetime.strptime(detectorentry_dict['timestamp'], "%H").time()
+			else:
+				timestamp = datetime.datetime.strptime(detectorentry_dict['timestamp'], "%H.%M").time()
+		else:
+			# there is no timestamp - likely a daily sum
+			timestamp = datetime.time(0,0)
+		entry = None
+		# get the station that this detector belongs to
+		detector = ndb.Key(Detector, detectorentry_dict['detector']).get()
+		if detector:
+			station = Station.query(Station.stationid == int(detector.stationid)).get()
+			if station:
+
+				entry = StationEntry.query(StationEntry.date == datetime.datetime.strptime(detectorentry_dict['datestamp'], "%Y-%m-%d").date(),
+											StationEntry.stationid == station.stationid).get()
+
+				speed_sum = None
+				if entry != None:
+					# an entry for this station entry exists - check for SpeedSum values
+					speed_sum = SpeedSum(time=timestamp,
+											sum = int(detectorentry_dict['sum']),
+											count = int(detectorentry_dict['count']))
+
+					if interval == 'daily_speed':
+						# this is a daily_speed (non-repeated) property
+						entry.daily_speed.append(speed_sum)
+					elif interval == 'hourly_speed':
+						# this is a hourly_speed (repeated) property
+						entry.hourly_speed.append(speed_sum)
+					elif interval == 'fifteenmin_speed':
+						# this is a fifteenmin_speed (repeated) property
+						entry.fifteenmin_speed.append(speed_sum)
+					elif interval == 'fivemin_speed':
+						# this is a fivemin_speed (repeated) property
+						entry.fivemin_speed.append(speed_sum)
+					else:
+						logging.error("Unknown interval:%s", interval)
+				
+				else:
+					# a StationEntry does not exist for this station - create one...
+					entry = StationEntry(date = datetime.datetime.strptime(detectorentry_dict['datestamp'], "%Y-%m-%d").date(),
+											stationid = station.stationid)
+					speed_sum = SpeedSum(time = timestamp,
+											sum = int(detectorentry_dict['sum']),
+											count = int(detectorentry_dict['count']))
+					
+					if interval == 'daily_speed':
+						# this is a daily_speed (non-repeated) property
+						entry.daily_speed.append(speed_sum)
+					elif interval == 'hourly_speed':
+						# this is a hourly_speed (repeated) property
+						entry.hourly_speed.append(speed_sum)
+					elif interval == 'fifteenmin_speed':
+						# this is a fifteenmin_speed (repeated) property
+						entry.fifteenmin_speed.append(speed_sum)
+					elif interval == 'fivemin_speed':
+						# this is a fivemin_speed (repeated) property
+						entry.fivemin_speed.append(speed_sum)
+					else:
+						logging.error("Unknown interval:%s", interval)
+			else:
+				logging.warn("Station not found for detector:%s", detector.stationid)
+		else:
+			logging.warn("Detector with ID:%s not found", detectorentry_dict['detector'])
+		if entry:
+			yield op.db.Put(entry)
+		else:
+			logging.error("Entry is None")
+	else:
+		logging.error("No blob was found for key %s", blob_key)
 
 app = webapp2.WSGIApplication(
     [
