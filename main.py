@@ -274,8 +274,6 @@ class Q1Handler(BaseHandler):
 					if (count != 0) and (speed != 0):
 						average_speed = speed / count
 					results.append("Station:%s date:%s time:%s average speed:%f" % (station.stationid, det_entry.date, speed_sum.time, average_speed))
-		else:
-			logging.info("No results for Highway query:%s", highway_q)
 		
 		self.render_template("query.html", {'freeway': fwayname,
 											'direction': fwaydir,

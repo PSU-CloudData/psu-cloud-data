@@ -29,6 +29,34 @@ from FreewayData import Detector, DetectorEntry, SpeedSum
 
 #MARK: MapReduce pipelines
 
+class ImportOutput(base_handler.PipelineBase):
+	"""A pipeline to store the result of the MapReduce job in the database.
+
+	Args:
+	blob_key: the DB key corresponding to the output of this job
+	"""
+
+	def run(self, blob_key):
+
+		# Import the resulting data from Blobstore to Datastore using Mapper
+		url = "http://" + os.environ['HTTP_HOST'] +"/mapreduce/command/start_job"
+		form_fields = {
+			"name": "Import aggregate data",
+			"mapper_input_reader": "mapreduce.input_readers.BlobstoreLineInputReader",
+			"mapper_handler": "map_reduce.import_aggregate_data",
+			"params.done_callback": "/done",
+			"mapper_params.blob_keys": re.sub('/blobstore/', '', str(blob_key)),
+			"mapper_params.processing_rate": 100,
+			"mapper_params.shard_count": 16
+		}
+		form_data = urllib.urlencode(form_fields)
+		result = urlfetch.fetch(url=url,
+								payload=form_data,
+								method=urlfetch.POST,
+								headers={'Content-Type': 'application/x-www-form-urlencoded',
+										'X-Requested-With': 'XMLHttpRequest'})
+
+
 def split_into_columns(s):
 	""" split a string into columns
 	      
@@ -80,7 +108,9 @@ class DailySpeedSumPipeline(base_handler.PipelineBase):
         },
         shards=16)
     yield StoreOutput("DailySpeedSum", filekey, output)
-
+    file_meta = ndb.Key(FileMetadata, filekey).get()
+    blob_key = file_meta.daily_speed_sum
+    yield ImportOutput(str(blob_key))
 
 def hourly_speed_sum_map(data):
 	"""Daily Speed Sum map function"""
@@ -125,6 +155,9 @@ class HourlySpeedSumPipeline(base_handler.PipelineBase):
         },
         shards=16)
     yield StoreOutput("HourlySpeedSum", filekey, output)
+    file_meta = ndb.Key(FileMetadata, filekey).get()
+    blob_key = file_meta.hourly_speed_sum
+    yield ImportOutput(str(blob_key))
 	
 def fifteen_min_speed_sum_map(data):
 	"""Fifteen Minute Speed Sum map function"""
@@ -179,6 +212,9 @@ class FifteenMinSpeedSumPipeline(base_handler.PipelineBase):
         },
         shards=16)
     yield StoreOutput("FifteenMinSpeedSum", filekey, output)
+    file_meta = ndb.Key(FileMetadata, filekey).get()
+    blob_key = file_meta.fifteen_min_speed_sum
+    yield ImportOutput(str(blob_key))
 
 def five_min_speed_sum_map(data):
 	"""Five Minute Speed Sum map function"""
@@ -235,6 +271,9 @@ class FiveMinSpeedSumPipeline(base_handler.PipelineBase):
         },
         shards=16)
     yield StoreOutput("FiveMinSpeedSum", filekey, output)
+    file_meta = ndb.Key(FileMetadata, filekey).get()
+    blob_key = file_meta.five_min_speed_sum
+    yield ImportOutput(str(blob_key))
 	
 class StoreOutput(base_handler.PipelineBase):
 	"""A pipeline to store the result of the MapReduce job in the database.
@@ -269,27 +308,6 @@ class StoreOutput(base_handler.PipelineBase):
 				m.five_min_speed_sum = blob_key
 
 		m.put()
-
-		# Next, input the resulting data from Blobstore to Datastore using Mapper
-		url = "http://" + os.environ['HTTP_HOST'] +"/mapreduce/command/start_job"
-		form_fields = {
-			"name": "Import aggregate data",
-			"mapper_input_reader": "mapreduce.input_readers.BlobstoreLineInputReader",
-			"mapper_handler": "map_reduce.import_aggregate_data",
-			"params.done_callback": "/done",
-			"mapper_params.blob_keys": blob_key,
-			"mapper_params.processing_rate": 100,
-			"mapper_params.shard_count": 16
-		}
-		form_data = urllib.urlencode(form_fields)
-		# TODO: need to get the authentication cookie from headers, and send it so that we don't 403
-		#
-		# Cookie: dev_appserver_login="test@example.com:True:185804764220139124118"
-		result = urlfetch.fetch(url=url,
-								payload=form_data,
-								method=urlfetch.POST,
-								headers={'Content-Type': 'application/x-www-form-urlencoded'})
-
 
 
 #MARK: RequestHandlers
