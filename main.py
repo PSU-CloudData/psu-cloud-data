@@ -255,7 +255,7 @@ class Q1Handler(BaseHandler):
 		
 		if highway:
 			stations = Station.query(Station.highwayid == highway.highwayid).fetch()
-			
+			results = []
 			for station in stations:
 				if station.stationclass == 1:
 					# don't count the freeway onramp loop data
