@@ -408,7 +408,8 @@ class Q3Handler(BaseHandler):
 			for station in stations:
 				if station.stationclass == 1:
 					# don't count the freeway onramp loop data
-					speed_sums = []
+					speed_sumsmorn = []
+					speed_sumsnight = []
 					for detector in station.detectors:
 						# get all detector entry entities in each station grouping
 						detector_key = ndb.Key(Detector, detector.detectorid)
@@ -416,28 +417,52 @@ class Q3Handler(BaseHandler):
 											DetectorEntry.date >= datetime.datetime.strptime(start, "%m/%d/%Y"),
 											DetectorEntry.date <= datetime.datetime.strptime(end, "%m/%d/%Y"))
 						
-						
-						det_times = det_entries_q.filter(ndb.OR(ndb.AND(DetectorEntry.fivemin_speed.time >= seven_am, 
-												DetectorEntry.fivemin_speed.time <= nine_am),			
-												ndb.AND(DetectorEntry.fivemin_speed.time >= four_pm,
-												DetectorEntry.fivemin_speed.time <= six_pm)))
+						morn= []
+						night = []
+						hold = []
+						for holds in det_entries_q.fetch():
+							hold.append(holds.hourly_speed)
 
-						det_entries = det_times.fetch()
-						for det_entry in det_entries:
+						for det in hold:
+							if(det.time >= seven_am.time() and det.time <= nine_am.time()):
+								morn.append(det.hourly_speed)
+							
+							if(det.time >= four_pm.time() and det.time <= six_pm.time()):
+								night.append(det.hourly_speed)
+
+						for det_entry in morn:
 							if (date(det_entry.date).weekday() == 2) or (date(det_entry.date).weekday() == 3) or (date(det_entry.date).weekday() == 4):
-								speed_sums.append(det_entry.fivemin_speed)
+								speed_sumsmorn.append(det_entry.hourly_speed)
 					
-			for time_interval in speed_sums:
+
+						for det_entry in night:
+							if (date(det_entry.date).weekday() == 2) or (date(det_entry.date).weekday() == 3) or (date(det_entry.date).weekday() == 4):
+								speed_sumsnight.append(det_entry.hourly_speed)
+					
+					for time_interval in speed_sumsmorn:
 						
-				# sum detector entries for this interval
-				speed = sum([int(speed_sum.sum) for speed_sum in time_interval])
-				count = sum([int(speed_sum.count) for speed_sum in time_interval])
-				average_speed = 0
-				if (count != 0) and (speed != 0):
-					average_speed = speed / count
-				results.append("Station:%s date:%s time:%s average speed:%f" % (station.stationid, det_entry.date, speed_sum.time, average_speed))					
+						# sum detector entries for this interval
+						speed = sum([int(speed_sum.sum) for speed_sum in time_interval])
+						count = sum([int(speed_sum.count) for speed_sum in time_interval])
+						average_speed = 0
+						if (count != 0) and (speed != 0):
+							average_speed = speed / count
+						results.append("Station:%s date:%s time: 07:00:00 AM - 09:00:00 AM average speed:%f" % (station.stationid, det_entry.date, average_speed))					
 
+					for time_interval in speed_sumsnight:
+						
+						# sum detector entries for this interval
+						speed = sum([int(speed_sum.sum) for speed_sum in time_interval])
+						count = sum([int(speed_sum.count) for speed_sum in time_interval])
+						average_speed = 0
+						if (count != 0) and (speed != 0):
+							average_speed = speed / count
+						results.append("Station:%s date:%s time: 04:00:00 PM - 06:00:00 PM average speed:%f" % (station.stationid, det_entry.date, average_speed))
+					
 
+					self.render_template("query.html", {'freeway': fway,
+												'direction': dir,
+												'results': results})
 
 #    Station-to-Station Travel Times: Find travel time for all station-to-station NB pairs for 8AM on Sept 22, 2011
 
