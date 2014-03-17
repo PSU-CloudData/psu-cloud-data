@@ -35,9 +35,11 @@
 		</div>
 		<div class="section">
 			<div class="interior">
-				<p><strong>Note:</strong> highways.csv, freeway_stations.csv, and freeway_detectors.csv can be imported to Datastore</p>
+                {% if hwys_count and stns_count and stations[0].detectors %}
+				<p><strong>Highways and stations are already uploaded and imported.</strong> View them below or upload a freeway_loopdata_short.csv above.</p>
+				{% elif file_count %}
+				<p><strong>Note:</strong> highways.csv, freeway_stations.csv, and freeway_detectors.csv.zip can be imported to Datastore</p>
 				<br/>
-				{% if file_count %}
 				<table border=1>
 					<tr>
 						<th></th>
@@ -51,7 +53,7 @@
 					{% for file in files %}
 						{% if file.filename == "highways.csv" %}
 						<tr>
-							<td><input type="radio" name="file_radio" onclick="updateImportForm('{{ file.blobkey }}','{{ file.blobkey }}','{{ file.filename }}');"></td>
+							<td><input type="radio" name="file_radio" onclick="updateImportForm('{{ file.blobkey }}','{{ file.blobkey }}','{{ file.filename }}');" {% if hwys_count %}disabled{% endif %}   ></td>
 							<td><a href="/file/{{ file.blobkey }}">{{ file.filename }}</a></td>
 							<td>{{ file.creation }}</td>
 							<td>{{ file.content_type }}</td>
@@ -61,7 +63,7 @@
 						</tr>
 						{% elif file.filename == "freeway_detectors.csv" %}
 						<tr>
-							<td><input type="radio" name="file_radio" onclick="updateImportForm('{{ file.blobkey }}','{{ file.blobkey }}','{{ file.filename }}');"></td>
+							<td><input type="radio" name="file_radio" onclick="updateImportForm('{{ file.blobkey }}','{{ file.blobkey }}','{{ file.filename }}');" {% if stns_count and stations[0].detectors %}disabled{% endif %}></td>
 							<td><a href="/file/{{ file.blobkey }}">{{ file.filename }}</a></td>
 							<td>{{ file.creation }}</td>
 							<td>{{ file.content_type }}</td>
@@ -71,7 +73,7 @@
 						</tr>
 						{% elif file.filename == "freeway_stations.csv" %}
 						<tr>
-							<td><input type="radio" name="file_radio" onclick="updateImportForm('{{ file.blobkey }}','{{ file.blobkey }}','{{ file.filename }}');"></td>
+							<td><input type="radio" name="file_radio" onclick="updateImportForm('{{ file.blobkey }}','{{ file.blobkey }}','{{ file.filename }}');" {% if stns_count %}disabled{% endif %}></td>
 							<td><a href="/file/{{ file.blobkey }}">{{ file.filename }}</a></td>
 							<td>{{ file.creation }}</td>
 							<td>{{ file.content_type }}</td>
