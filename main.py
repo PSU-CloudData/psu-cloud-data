@@ -29,7 +29,7 @@ from google.appengine.runtime import apiproxy_errors
 
 from BaseHandler import BaseHandler
 from FileMetadata import FileMetadata
-from FreewayData import Highway, Station, Detector, SpeedSum, DetectorEntry, StationEntry
+from FreewayData import Highway, Station, Detector, SpeedSum, DetectorEntry
 
 
 def combine_stations():
@@ -61,7 +61,7 @@ def combine_detectors():
 				stn.detectors.append(det)
 				stn.put()
 				logging.info("Put detector:%s in station:%s", det.key, stn.stationid)
-	#deleteDetectors()
+	deleteDetectors()
 
 def deleteDetectors():
 	""" delete all Detector entities from datastore """
@@ -251,37 +251,33 @@ class Q1Handler(BaseHandler):
 		highway_q = Highway.query(Highway.highwayname == fwayname, Highway.shortdirection == fwaydir)
 		logging.info(highway_q)
 		highway = highway_q.get()
-		results = []
 		
 		if highway:
 			stations = Station.query(Station.highwayid == highway.highwayid).fetch()
 			
 			for station in stations:
-				# get all station entries for this station
 				if station.stationclass == 1:
 					# don't count the freeway onramp loop data
-					station_entries = StationEntry.query(StationEntry.stationid == station.stationid,
-														StationEntry.date == datetime.datetime.strptime(date, "%m/%d/%Y")).fetch()
-					entries = []
-					s_time = None
-					s_sum = 0
-					s_count = 0
-					for station_entry in station_entries:
-						# aggregate all station entry SumCounts
-						s_sum += sum([int(speed_sum.sum) for speed_sum in station_entry.fivemin_speed])
-						s_count += sum([int(speed_sum.count) for speed_sum in station_entry.fivemin_speed])
-						if len(station_entry.fivemin_speed) > 0:
-							s_time = station_entry.fivemin_speed[0].time
+					speed_sums = []
+					for detector in station.detectors:
+						# get all detector entry entities in each station grouping
+						detector_key = ndb.Key(Detector, detector.detectorid)
+						det_entries_q = DetectorEntry.query(DetectorEntry.detectorid == detector.detectorid,
+															DetectorEntry.date == datetime.datetime.strptime(date, "%m/%d/%Y"))
+						det_entries = det_entries_q.fetch()
+						for det_entry in det_entries:
+							speed_sums.append(det_entry.fivemin_speed)
 					
-					average_speed = 0
-					if (s_count != 0) and (s_sum != 0):
-						average_speed = s_sum / s_count
+					for time_interval in speed_sums:
 						
-					if not s_time:
-						results.append("Station:%s date:%s average speed:%f" % (station_entry.stationid, station_entry.date, average_speed))
-					else:
-						results.append("Station:%s date:%s time:%s average speed:%f" % (station_entry.stationid, station_entry.date, s_time, average_speed))
-
+						# sum detector entries for this interval
+						speed = sum([int(speed_sum.sum) for speed_sum in time_interval])
+						count = sum([int(speed_sum.count) for speed_sum in time_interval])
+						average_speed = 0
+						if (count != 0) and (speed != 0):
+							average_speed = speed / count
+						results.append("Station:%s date:%s time:%s average speed:%f" % (station.stationid, det_entry.date, speed_sum.time, average_speed))
+			
 			self.render_template("query.html", {'freeway': fwayname,
 												'direction': fwaydir,
 												'interval': interval,
@@ -339,7 +335,7 @@ class Q2Handler(BaseHandler):
 						for det_entry in det_entries:
 							speed_sums[counter].append(det_entry.hourly_speed.sum)
 					
-						counter += 1
+					counter += 1
 
 #    Mid-Weekday Peak Period Travel Times: Find the average travel time for 7-9AM and 4-6PM on Tuesdays, Wednesdays and 
 #    Thursdays for the I-205 NB freeway during the 2-month test period
@@ -384,15 +380,16 @@ class Q3Handler(BaseHandler):
 					speed_sums = []
 					for detector in station.detectors:
 						# get all detector entry entities in each station grouping
+						detector_key = ndb.Key(Detector, detector.detectorid)
 						det_entries_q = DetectorEntry.query(DetectorEntry.detectorid == detector.detectorid,
-											DetectorEntry.date == datetime.datetime.strptime(start, "%m/%d/%Y"),
+											DetectorEntry.date >= datetime.datetime.strptime(start, "%m/%d/%Y"),
 											DetectorEntry.date <= datetime.datetime.strptime(end, "%m/%d/%Y"))
 						
 						
-						det_times = det_entries_q.filter(ndb.OR(ndb.AND(DetectorEntry.fivemin_speed.time >= seven_am.time(),
-												DetectorEntry.fivemin_speed.time <= nine_am.time()),
-												ndb.AND(DetectorEntry.fivemin_speed.time >= four_pm.time(),
-												DetectorEntry.fivemin_speed.time <= six_pm.time())))
+						det_times = det_entries_q.filter(ndb.OR(ndb.AND(DetectorEntry.fivemin_speed.time >= seven_am, 
+												DetectorEntry.fivemin_speed.time <= nine_am),			
+												ndb.AND(DetectorEntry.fivemin_speed.time >= four_pm,
+												DetectorEntry.fivemin_speed.time <= six_pm)))
 
 						det_entries = det_times.fetch()
 						for det_entry in det_entries:
