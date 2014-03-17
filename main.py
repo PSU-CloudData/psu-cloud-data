@@ -122,12 +122,6 @@ class MainHandler(BaseHandler):
 			results = file_q.fetch(10)
 			files = [result for result in results]
 			file_count = len(files)
-			loop_count = 0
-			for file in files:
-				if file.filename in ["freeway_loopdata_short.csv.zip", 
-					"freeway_loopdata.csv.zip","freeway_loopdata_short_16.zip",
-					"freeway_loopdata_16.zip"]:
-					loop_count += 1
 
 			# get highways from Datastore
 			hwys = getHighways()
@@ -144,7 +138,6 @@ class MainHandler(BaseHandler):
 			self.render_template("index.html",{
 								 "file_count": file_count,
 								 "files": files,
-                                 "loop_count":loop_count,
 								 "highways": hwys,
 								 "hwys_count": hwy_count,
 								 "stations": stns,
@@ -254,7 +247,8 @@ class Q1Handler(BaseHandler):
 		(fwayname, fwaydir) = freeway.split()
 		interval = self.request.get('q1interval')
 		date = self.request.get('q1date')
-		
+		results = []
+
 		highway_q = Highway.query(Highway.highwayname == fwayname, Highway.shortdirection == fwaydir)
 		logging.info(highway_q)
 		highway = highway_q.get()
@@ -348,17 +342,18 @@ class Q2Handler(BaseHandler):
 			hold = counter
 			counter = 0
 			results = []
-			for time_interval in speed_sums[counter]:
-						
-				# sum detector entries for this interval
-				speed = sum([int(speed_sum.sum) for speed_sum in time_interval])
-				count = sum([int(speed_sum.count) for speed_sum in time_interval])
-				hours = speed_sum.time
-				average_speed = 0
-				if (count != 0) and (speed != 0):
-					average_speed = speed / count
-					traveltime = average_speed * (lengths[counter] / 60)
-				results.append("Highway:%s Direction:%s Date:%s Hour:%s Travel Time:%f" % (fway, dir, timeanddate[counter][0], hours, traveltime))
+			for time_interval in speed_sums[counter]:	
+				speed = 0
+				count = 0
+				for speed_sum in time_interval:	
+					speed += speed_sum.sum
+					count += speed_sum.count
+					hours = speed_sum.time
+					average_speed = 0
+					if (count != 0) and (speed != 0):
+						average_speed = speed / count
+						traveltime = average_speed * (lengths[counter] / 60)
+						results.append("Highway:%s Direction:%s Date:%s Hour:%s Travel Time:%f" % (fway, dir, timeanddate[counter][0], hours, traveltime))
 				counter += 1
 			self.render_template("query.html", {'freeway': fway,
 												'direction': dir,
