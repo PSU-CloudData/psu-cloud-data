@@ -254,9 +254,10 @@ class Q1Handler(BaseHandler):
 		
 		if highway:
 			stations = Station.query(Station.highwayid == highway.highwayid).fetch()
-			
+			results = []
 			for station in stations:
 				if station.stationclass == 1:
+					logging.info(station)
 					# don't count the freeway onramp loop data
 					speed_sums = []
 					for detector in station.detectors:
@@ -266,17 +267,22 @@ class Q1Handler(BaseHandler):
 															DetectorEntry.date == datetime.datetime.strptime(date, "%m/%d/%Y"))
 						det_entries = det_entries_q.fetch()
 						for det_entry in det_entries:
+							# append each detector entry to the speed_sums
 							speed_sums.append(det_entry.fivemin_speed)
 					
 					for time_interval in speed_sums:
-						
-						# sum detector entries for this interval
-						speed = sum([int(speed_sum.sum) for speed_sum in time_interval])
-						count = sum([int(speed_sum.count) for speed_sum in time_interval])
-						average_speed = 0
-						if (count != 0) and (speed != 0):
-							average_speed = speed / count
-						results.append("Station:%s date:%s time:%s average speed:%f" % (station.stationid, det_entry.date, speed_sum.time, average_speed))
+						# go through the list of speed sums for this station, and join them on time
+						if len(time_interval) > 0:
+							time_intervals = [interval.time for interval in time_interval]
+							# get the list of time intervals (list of time objects)
+							logging.info(time_intervals)
+							# sum detector entries for this interval
+							speed = sum([int(speed_sum.sum) for speed_sum in time_interval])
+							count = sum([int(speed_sum.count) for speed_sum in time_interval])
+							average_speed = 0
+							if (count != 0) and (speed != 0):
+								average_speed = speed / count
+							results.append("Station:%s date:%s time:%s average speed:%f" % (station.stationid, det_entry.date, time_intervals[0], average_speed))
 			
 			self.render_template("query.html", {'freeway': fwayname,
 												'direction': fwaydir,
@@ -346,12 +352,17 @@ class Q2Handler(BaseHandler):
 				# sum detector entries for this interval
 				speed = sum([int(speed_sum.sum) for speed_sum in time_interval])
 				count = sum([int(speed_sum.count) for speed_sum in time_interval])
-				hours = speed_sum.time
+				if len(time_interval) > 0:
+					hours = time_interval[0].time
+				else:
+					hours = datetime.time(0,0)
 				average_speed = 0
+				traveltime = 0
 				if (count != 0) and (speed != 0):
 					average_speed = speed / count
 					traveltime = average_speed * (lengths[counter] / 60)
-				results.append("Highway:%s Direction:%s Date:%s Hour:%s Travel Time:%f" % (fway, dir, timeanddate[counter][0], hours, traveltime))
+				if len(timeanddate[counter]) > 0:
+					results.append("Highway:%s Direction:%s Date:%s Hour:%s Travel Time:%f" % (fway, dir, timeanddate[counter][0], hours, traveltime))
 				counter += 1
 			self.render_template("query.html", {'freeway': fway,
 												'direction': dir,
