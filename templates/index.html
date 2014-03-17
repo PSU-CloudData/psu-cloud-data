@@ -121,7 +121,11 @@
 						<td>{{ highway.highwayname }} </td>
 						<td>{{ highway.direction }}</td>
 						<td>{{ highway.shortdirection }}</td>
-						<td>{{ highway.stations }}</td>
+						<td>
+                            {% for station in highway.stations %}
+                                {{station.id()}}
+                            {% endfor %}
+                        </td>
 					{% endfor %}
 					</tr>
 				</table>
