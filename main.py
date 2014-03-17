@@ -309,6 +309,7 @@ class Q2Handler(BaseHandler):
 		counter = 0
 		speed_sums = []
 		lengths = []
+		timeanddate = []
 
 # get Highwayid of highway= highwayname and direction = dir, create a list of them 
 
@@ -319,10 +320,10 @@ class Q2Handler(BaseHandler):
 			for station in stations:
 				lengths.append(station.length_mid)
 				speed_sums.append([])
+				timeanddate.append([])
 
 			for station in stations:
 				if station.stationclass == 1:
-					counter = 0
 					# don't count the freeway onramp loop data
 					for detector in station.detectors:
 						# get all detector entry entities in each station grouping
@@ -333,9 +334,28 @@ class Q2Handler(BaseHandler):
 
 						det_entries = det_entries_q.fetch()
 						for det_entry in det_entries:
-							speed_sums[counter].append(det_entry.hourly_speed.sum)
+							speed_sums[counter].append(det_entry.hourly_speed)
+							timeanddate[counter].append(det_entry.date)
 					
 					counter += 1
+			hold = counter
+			counter = 0
+			results = []
+			for time_interval in speed_sums[counter]:
+						
+				# sum detector entries for this interval
+				speed = sum([int(speed_sum.sum) for speed_sum in time_interval])
+				count = sum([int(speed_sum.count) for speed_sum in time_interval])
+				hours = speed_sum.time
+				average_speed = 0
+				if (count != 0) and (speed != 0):
+					average_speed = speed / count
+					traveltime = average_speed * (lengths[counter] / 60)
+				results.append("Highway:%s Direction:%s Date:%s Hour:%s Travel Time:%f" % (fway, dir, timeanddate[counter][0], hours, traveltime))
+				counter += 1
+			self.render_template("query.html", {'freeway': fway,
+												'direction': dir,
+												'results': results})
 
 #    Mid-Weekday Peak Period Travel Times: Find the average travel time for 7-9AM and 4-6PM on Tuesdays, Wednesdays and 
 #    Thursdays for the I-205 NB freeway during the 2-month test period
@@ -362,10 +382,10 @@ class Q3Handler(BaseHandler):
 		dir = i.next()
 		start = self.request.get('q3sdate')
 		end = self.request.get('q3edate')
-		seven_am = datetime.datetime.strptime("07:00:00 AM", "%I:%M:%S %p")
-		nine_am = datetime.datetime.strptime("09:00:00 AM", "%I:%M:%S %p")
-		four_pm = datetime.datetime.strptime("04:00:00 PM", "%I:%M:%S %p")
-		six_pm = datetime.datetime.strptime("06:00:00 PM", "%I:%M:%S %p")
+		seven_am = datetime.datetime.strptime("1970-1-1 07:00:00 AM", "%Y-%m-%d %I:%M:%S %p")
+		nine_am = datetime.datetime.strptime("1970-1-1 09:00:00 AM", "%Y-%m-%d %I:%M:%S %p")
+		four_pm = datetime.datetime.strptime("1970-1-1 04:00:00 PM", "%Y-%m-%d %I:%M:%S %p")
+		six_pm = datetime.datetime.strptime("1970-1-1 06:00:00 PM", "%Y-%m-%d %I:%M:%S %p")
 
 
 # get Highwayid of highway= highwayname and direction = dir, create a list of them 
@@ -396,15 +416,15 @@ class Q3Handler(BaseHandler):
 							if (date(det_entry.date).weekday() == 2) or (date(det_entry.date).weekday() == 3) or (date(det_entry.date).weekday() == 4):
 								speed_sums.append(det_entry.fivemin_speed)
 					
-					for time_interval in speed_sums:
+			for time_interval in speed_sums:
 						
-						# sum detector entries for this interval
-						speed = sum([int(speed_sum.sum) for speed_sum in time_interval])
-						count = sum([int(speed_sum.count) for speed_sum in time_interval])
-						average_speed = 0
-						if (count != 0) and (speed != 0):
-							average_speed = speed / count
-						results.append("Station:%s date:%s time:%s average speed:%f" % (station.stationid, det_entry.date, speed_sum.time, average_speed))					
+				# sum detector entries for this interval
+				speed = sum([int(speed_sum.sum) for speed_sum in time_interval])
+				count = sum([int(speed_sum.count) for speed_sum in time_interval])
+				average_speed = 0
+				if (count != 0) and (speed != 0):
+					average_speed = speed / count
+				results.append("Station:%s date:%s time:%s average speed:%f" % (station.stationid, det_entry.date, speed_sum.time, average_speed))					
 
 
 
