@@ -182,7 +182,7 @@
 			<div class="interior">
 				<p>Select an input file and run a MapReduce job on it:</p>
 				<br />
-				{% if file_count %}
+				{% if loop_count %}
 				<table border=1>
 					<tr>
 						<th></th>
@@ -237,7 +237,7 @@
 				<p>Run a Mapper job on results from a MapReduce job.</p>
 				<p>If the button for the Mapper job that you want to run is not enabled, you may need to run MapReduce for that interval.</p>
 				<br />
-				{% if file_count %}
+				{% if loop_count %}
 				<form action="/map_reduce" method="post">
 					<strong>Input File:</strong> <label id="map_fileName">none selected</label>
 					<table border=1>

@@ -122,6 +122,12 @@ class MainHandler(BaseHandler):
 			results = file_q.fetch(10)
 			files = [result for result in results]
 			file_count = len(files)
+			loop_count = 0
+			for file in files:
+				if file.filename in ["freeway_loopdata_short.csv.zip", 
+					"freeway_loopdata.csv.zip","freeway_loopdata_short_16.zip",
+					"freeway_loopdata_16.zip"]:
+					loop_count += 1
 
 			# get highways from Datastore
 			hwys = getHighways()
@@ -138,6 +144,7 @@ class MainHandler(BaseHandler):
 			self.render_template("index.html",{
 								 "file_count": file_count,
 								 "files": files,
+                                 "loop_count":loop_count,
 								 "highways": hwys,
 								 "hwys_count": hwy_count,
 								 "stations": stns,
