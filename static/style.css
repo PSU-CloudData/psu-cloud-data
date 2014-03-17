@@ -58,6 +58,10 @@ form {
 	padding:10px 0px 10px 20px;
 }
 
+.interiortable {
+	overflow-x:scroll;
+}
+
 .interior p {
 	margin:0px;
 }
